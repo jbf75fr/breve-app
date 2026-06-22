@@ -64,6 +64,10 @@
   .e-aside .src-n{display:block;font-size:16px;font-weight:600;color:var(--ink-soft);font-family:'Fraunces',serif}
 
   .endplate{text-align:center;padding:42px 0 6px;color:var(--ink-faint);font-size:14px;border-top:1px solid var(--line);margin-top:34px}
+  .account{text-align:center;padding:28px 0 8px;border-top:1px solid var(--line);margin-top:34px}
+  .account-email{font-size:13px;color:var(--ink-faint);margin-bottom:12px;word-break:break-all}
+  .account-logout{font-family:inherit;font-size:14px;font-weight:500;color:var(--ink-soft);background:none;border:1px solid var(--line-strong);border-radius:30px;padding:10px 22px;cursor:pointer;transition:.15s}
+  .account-logout:hover{border-color:var(--ink-faint);color:var(--ink)}
   .endplate .mark{font-family:'Fraunces',serif;font-size:18px;color:var(--ink-soft);margin-bottom:5px}
   .endplate .sub{font-size:13px}
   .notif-cta{margin-top:20px}
@@ -218,6 +222,11 @@
       <div class="empty" id="saved-empty">
         <div class="serif">Aucune brève conservée</div>
         <div class="sub">Dans une brève, touchez « Conserver » pour la retrouver ici.</div>
+      </div>
+
+      <div class="account" id="account">
+        <div class="account-email" id="account-email"></div>
+        <button class="account-logout" id="account-logout">Se déconnecter</button>
       </div>
     </section>
   </div>
@@ -611,6 +620,26 @@ window.selected=selected;
 window.saved=saved;
 // Ré-affiche toute l'app (après chargement des préférences depuis Supabase).
 window.breveRefresh=function(){renderThemes();renderBrief();updateBadge();renderSaved()};
+
+// Zone compte : affiche l'email et masque le bloc tant qu'on n'est pas connecté.
+window.breveUpdateAccount=function(){
+  const box=document.getElementById('account');
+  const em=document.getElementById('account-email');
+  if(!box||!em)return;
+  if(window.breveUserEmail){
+    em.textContent=window.breveUserEmail;
+    box.style.display='block';
+  }else{
+    box.style.display='none';
+  }
+};
+(function wireLogout(){
+  const btn=document.getElementById('account-logout');
+  if(btn)btn.addEventListener('click',function(){
+    if(window.breveSignOut)window.breveSignOut();
+  });
+})();
+window.breveUpdateAccount();
 
 // Premier rendu (l'overlay de connexion s'affichera par-dessus tant que
 // l'utilisateur n'est pas connecté).

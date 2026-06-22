@@ -212,6 +212,10 @@ window.brevePersist = scheduleSave;
 async function startSession(user, isFreshLogin) {
   currentUser = user;
 
+  // Expose l'email à l'app pour l'afficher (zone compte).
+  window.breveUserEmail = (user.email || "");
+  if (window.breveUpdateAccount) window.breveUpdateAccount();
+
   const prefs = await loadPreferences(user.id);
 
   if (prefs.found) {
