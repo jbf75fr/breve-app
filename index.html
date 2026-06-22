@@ -25,7 +25,7 @@
   .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:20px}
   .brand .logo .a{color:#fff}
   .brand .name{font-family:'Fraunces',serif;font-size:21px;font-weight:600;letter-spacing:.01em}
-  .brand .date{font-size:12px;color:var(--ink-faint)}
+  .brand .date{font-size:13px;color:var(--accent);font-weight:600}
   .nav{display:flex;gap:4px}
   .nav button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:8px 15px;border-radius:8px;cursor:pointer;transition:.15s}
   .nav button:hover{background:var(--warm);color:var(--ink)}
@@ -41,6 +41,7 @@
   .strip{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:22px}
   .strip h1{font-family:'Fraunces',serif;font-size:38px;font-weight:600;line-height:1.08;letter-spacing:-.01em}
   .strip-meta{font-size:13px;color:var(--ink-faint);margin-top:8px}
+  .revue-date{color:var(--accent);white-space:nowrap}
   .themebar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 16px;padding-bottom:2px}
   .themebar #themechips{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   @media(max-width:640px){.themebar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:14px}.themebar #themechips{flex-wrap:nowrap}.themebar::-webkit-scrollbar{display:none}.themebar .chip{flex:0 0 auto}}
@@ -145,11 +146,11 @@
   <div class="top-in">
     <div class="brand">
       <span class="logo">B</span>
-      <div><div class="name">Brève</div><div class="date">Samedi 20 juin</div></div>
+      <div><div class="name">Brève</div></div>
     </div>
     <nav class="nav">
-      <button id="nav-brief" class="active" data-go="brief">La revue</button>
-      <button id="nav-saved" data-go="saved">Mes brèves <span class="badge" id="saved-badge">0</span></button>
+      <button id="nav-brief" class="active" data-go="brief">Votre revue</button>
+      <button id="nav-saved" data-go="saved">Brèves enregistrées <span class="badge" id="saved-badge">0</span></button>
     </nav>
   </div>
 </header>
@@ -159,31 +160,24 @@
     <section id="page-brief" class="page show">
       <div class="strip">
         <div>
-          <h1 class="serif">Votre revue</h1>
+          <h1 class="serif" id="revue-title">Votre revue</h1>
           <div class="strip-meta" id="strip-meta"></div>
-        </div>
-        <div class="controls-row">
-          <div class="seg" data-seg>
-            <button data-count="5">5</button>
-            <button data-count="10">10</button>
-          </div>
         </div>
       </div>
 
       <div class="themebar" id="themebar">
         <span id="themechips"></span>
-        <label class="searchchip" id="searchchip" title="Rechercher un sujet">
-          <span class="plus">+</span>
-          <input id="custom-theme" type="text" maxlength="28" placeholder="sujet…" autocomplete="off">
+        <label class="searchchip" id="searchchip" title="Rechercher dans les brèves">
+          <span class="plus">⌕</span>
+          <input id="custom-theme" type="text" maxlength="40" placeholder="Rechercher…" autocomplete="off">
         </label>
       </div>
-      <p id="search-feedback" style="font-size:13px;margin:-16px 0 22px;display:none"></p>
 
       <div class="list" id="list"></div>
 
       <div class="empty" id="brief-empty" style="display:none">
-        <div class="serif">Le sommaire est vide</div>
-        <div class="sub">Ouvrez les réglages pour choisir vos sujets.</div>
+        <div class="serif">Aucune brève à afficher</div>
+        <div class="sub">Sélectionnez un ou plusieurs thème(s).</div>
       </div>
       <div class="endplate" id="brief-end">
         <div class="mark">C'est tout pour aujourd'hui.</div>
@@ -222,7 +216,8 @@
 const THEMES=["Politique","Économie","International","Technologie","Sciences","Culture","Sport","Climat","Santé"];
 const CUSTOM=[];
 const selected=new Set(["Politique","International","Technologie","Économie","Culture","Sciences","Sport","Climat","Santé"]);
-let chosenCount=5;
+let chosenCount=10;
+let searchQuery="";
 
 /* couleurs d'accent par thème (sobres, encrées) */
 const CATCOLOR={
@@ -406,24 +401,10 @@ function renderThemes(){
   const bar=document.getElementById('themechips');
   if(bar)fillThemes(bar,true);
 }
-function addCustomTheme(){
+function runSearch(){
   const input=document.getElementById('custom-theme');
-  const fb=document.getElementById('search-feedback');
-  let v=input.value.trim().replace(/\s+/g,' ');
-  if(!v)return;
-  v=v.charAt(0).toUpperCase()+v.slice(1);
-  const all=THEMES.concat(CUSTOM);
-  const existing=all.find(t=>t.toLowerCase()===v.toLowerCase());
-  if(!existing)CUSTOM.push(v);
-  const name=existing||v;
-  selected.add(name);
-  input.value='';
-  renderThemes();renderBrief();input.focus();
-  const kw=name.toLowerCase();
-  const matches=ARTICLES.filter(a=>THEMES.includes(name)?a.theme===name:(a.title+' '+a.summary+' '+a.full+' '+a.theme).toLowerCase().includes(kw)).length;
-  fb.style.display='block';
-  if(matches>0){fb.textContent='« '+name+' » ajouté — '+matches+' brève'+(matches>1?'s':'')+' aujourd\u2019hui.';fb.style.color='var(--accent)'}
-  else{fb.textContent='« '+name+' » ajouté — rien aujourd\u2019hui, mais vous serez servi dès qu\u2019il y aura de quoi.';fb.style.color='var(--ink-faint)'}
+  searchQuery=input.value.trim().replace(/\s+/g,' ');
+  renderBrief();
 }
 
 /* ---------- selection logic ---------- */
@@ -433,13 +414,20 @@ function articleMatches(a){
   for(const t of CUSTOM){if(selected.has(t)&&hay.includes(t.toLowerCase()))return true}
   return false;
 }
+function searchMatches(a){
+  const q=searchQuery.toLowerCase();
+  const hay=(a.title+' '+a.brief+' '+a.summary+' '+a.full+' '+a.theme+' '+
+    a.angles.map(g=>g.outlet+' '+g.take).join(' ')).toLowerCase();
+  return hay.includes(q);
+}
 function pickArticles(){
+  // Une recherche active prend le dessus : on cherche dans TOUTES les brèves,
+  // indépendamment des thèmes sélectionnés. Sinon, filtrage par thèmes.
+  if(searchQuery){
+    return ARTICLES.filter(searchMatches).sort((a,b)=>a.priority-b.priority).slice(0,chosenCount);
+  }
   return ARTICLES.filter(articleMatches).sort((a,b)=>a.priority-b.priority).slice(0,chosenCount);
 }
-function syncSegs(){
-  document.querySelectorAll('[data-seg] button').forEach(b=>b.classList.toggle('on',+b.dataset.count===chosenCount));
-}
-
 /* ---------- revue list ---------- */
 function entryRow(a,i){
   const c=cat(a.theme);
@@ -459,14 +447,35 @@ function renderBrief(){
   const empty=document.getElementById('brief-empty');
   const end=document.getElementById('brief-end');
   const wrap=document.getElementById('list');
+  const emptyTitle=empty?empty.querySelector('.serif'):null;
+  const emptySub=empty?empty.querySelector('.sub'):null;
+
+  // Mode recherche : prioritaire, indépendant des thèmes.
+  if(searchQuery){
+    if(list.length===0){
+      meta.textContent='aucun résultat pour « '+searchQuery+' »';
+      wrap.innerHTML='';
+      if(emptyTitle)emptyTitle.textContent='Aucune brève trouvée';
+      if(emptySub)emptySub.textContent='Essayez un autre mot.';
+      empty.style.display='block';end.style.display='none';return;
+    }
+    empty.style.display='none';end.style.display='block';
+    meta.textContent=list.length+' résultat'+(list.length>1?'s':'')+' pour « '+searchQuery+' »';
+    wrap.innerHTML=list.map(entryRow).join('');
+    return;
+  }
+
+  // Mode normal : filtrage par thèmes.
   if(n===0){
     meta.textContent='aucun thème sélectionné';
-    wrap.innerHTML='';empty.style.display='block';end.style.display='none';syncSegs();return;
+    wrap.innerHTML='';
+    if(emptyTitle)emptyTitle.textContent='Aucune brève à afficher';
+    if(emptySub)emptySub.textContent='Sélectionnez un ou plusieurs thème(s).';
+    empty.style.display='block';end.style.display='none';return;
   }
   empty.style.display='none';end.style.display='block';
   meta.textContent=list.length+' brève'+(list.length>1?'s':'')+' · '+n+' thème'+(n>1?'s':'');
   wrap.innerHTML=list.map(entryRow).join('');
-  syncSegs();
 }
 
 /* ---------- detail ---------- */
@@ -531,9 +540,6 @@ document.addEventListener('click',function(e){
   if(rm){e.stopPropagation();const t=rm.dataset.remove;const i=CUSTOM.indexOf(t);if(i>-1)CUSTOM.splice(i,1);selected.delete(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
   const chip=e.target.closest('[data-theme]');
   if(chip){const t=chip.dataset.theme;selected.has(t)?selected.delete(t):selected.add(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
-  if(e.target.closest('#add-theme')){addCustomTheme();return}
-  const seg=e.target.closest('[data-seg] button');
-  if(seg){chosenCount=+seg.dataset.count;renderBrief();return}
   const save=e.target.closest('[data-save]');
   if(save){e.stopPropagation();const id=+save.dataset.save;toggleSave(id);openDetail(id);return}
   const unsave=e.target.closest('[data-unsave]');
@@ -541,9 +547,26 @@ document.addEventListener('click',function(e){
   const card=e.target.closest('[data-open]');
   if(card){openDetail(+card.dataset.open);return}
 });
-document.addEventListener('keydown',function(e){
-  if(e.key==='Enter'&&e.target&&e.target.id==='custom-theme'){e.preventDefault();addCustomTheme()}
+// Recherche en direct dans les brèves (au fil de la frappe).
+document.addEventListener('input',function(e){
+  if(e.target&&e.target.id==='custom-theme'){runSearch()}
 });
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target&&e.target.id==='custom-theme'){e.preventDefault();runSearch()}
+  if(e.key==='Escape'&&e.target&&e.target.id==='custom-theme'){e.target.value='';runSearch()}
+});
+
+// Date courante de la revue (mise à jour quand la revue du jour est chargée).
+let revueDate="";
+function setRevueTitle(){
+  const t=document.getElementById('revue-title');
+  if(!t)return;
+  if(revueDate){
+    t.innerHTML='Votre revue du <span class="revue-date">'+revueDate+'</span>';
+  }else{
+    t.textContent='Votre revue';
+  }
+}
 
 // Charge la revue du jour depuis le backend. En cas d'échec (réseau, fichier
 // absent), on garde les données de secours déjà affichées : l'app n'est jamais vide.
@@ -556,8 +579,10 @@ async function loadLiveBreves(){
       ARTICLES = data.breves;
       // met à jour la date affichée si le backend l'a fournie
       if(data.date_label){
+        revueDate=data.date_label;
         const el = document.querySelector('.brand .date');
         if(el) el.textContent = data.date_label;
+        setRevueTitle();
       }
       // ré-affiche tout avec les vraies données
       renderThemes();renderBrief();renderSaved();
@@ -578,6 +603,17 @@ window.breveRefresh=function(){renderThemes();renderBrief();updateBadge();render
 
 // Premier rendu (l'overlay de connexion s'affichera par-dessus tant que
 // l'utilisateur n'est pas connecté).
+// Date du jour en français (repli avant le chargement de la revue live).
+(function initTodayDate(){
+  const J=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+  const M=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  const d=new Date();
+  revueDate=J[d.getDay()].charAt(0).toUpperCase()+J[d.getDay()].slice(1)+" "+d.getDate()+" "+M[d.getMonth()];
+  const el=document.querySelector('.brand .date');
+  if(el)el.textContent=revueDate;
+  setRevueTitle();
+})();
+
 renderThemes();renderBrief();updateBadge();renderSaved();
 loadLiveBreves();
 </script>
