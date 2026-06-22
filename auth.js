@@ -44,10 +44,8 @@ function buildOverlay() {
       <div class="auth-sep"><span>ou</span></div>
 
       <div class="auth-beta">
-        <p class="auth-beta-intro">Pas encore d'accès ? Inscrivez-vous à la beta.</p>
-        <iframe data-tally-src="https://tally.so/embed/ODrbyk?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-                loading="lazy" width="100%" height="180" frameborder="0" marginheight="0" marginwidth="0"
-                title="Inscription à la beta de Brève"></iframe>
+        <p class="auth-beta-intro">Pas encore d'accès ?</p>
+        <button class="auth-beta-btn" id="auth-beta-open">S'inscrire à la beta</button>
       </div>
     </div>
 
@@ -59,11 +57,28 @@ function buildOverlay() {
       <div class="auth-count" id="auth-count"></div>
       <button class="auth-cta" id="auth-ob-done">Voir ma revue</button>
     </div>
+
+    <div class="auth-beta-panel" id="auth-beta-panel" style="display:none">
+      <button class="auth-beta-close" id="auth-beta-close" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <iframe id="auth-beta-frame" data-tally-src="https://tally.so/r/ODrbyk?transparentBackground=1"
+              width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0"
+              title="S'inscrire à la beta"></iframe>
+    </div>
   `;
   document.body.appendChild(o);
 
   document.getElementById("auth-google").addEventListener("click", signIn);
   document.getElementById("auth-ob-done").addEventListener("click", finishOnboarding);
+
+  document.getElementById("auth-beta-open").addEventListener("click", () => {
+    document.getElementById("auth-beta-panel").style.display = "block";
+    loadTally();
+  });
+  document.getElementById("auth-beta-close").addEventListener("click", () => {
+    document.getElementById("auth-beta-panel").style.display = "none";
+  });
 
   loadTally();
 }
