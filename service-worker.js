@@ -9,7 +9,7 @@
   index.html) pour pouvoir contrôler toute l'application.
 */
 
-const CACHE = "breve-v1";
+const CACHE = "breve-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -41,6 +41,13 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+
+  // On laisse passer sans interception les requêtes vers d'autres domaines
+  // (ex. la revue du jour sur raw.githubusercontent.com) : l'app les gère
+  // elle-même avec cache:"no-store" pour toujours obtenir la version fraîche.
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
   event.respondWith(
     fetch(req)
       .then((res) => {
