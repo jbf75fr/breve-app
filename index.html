@@ -110,6 +110,27 @@
   .searchchip:focus-within input{width:150px}
 
   .ic{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  /* ===== Overlay connexion + onboarding (auth.js) ===== */
+  #auth-overlay{position:fixed;inset:0;z-index:1000;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+  .auth-screen{display:flex;flex-direction:column;align-items:center;max-width:380px;width:100%;animation:authfade .35s ease}
+  @keyframes authfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .auth-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:38px;margin-bottom:24px}
+  .auth-title{font-family:'Fraunces',serif;font-size:40px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}
+  .auth-tagline{font-size:16px;color:var(--ink-soft);line-height:1.5;margin-bottom:40px}
+  .auth-gbtn{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:320px;background:#fff;border:1px solid var(--line-strong);border-radius:30px;padding:14px 20px;font-family:inherit;font-size:15px;font-weight:500;color:#3c4043;cursor:pointer;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .auth-gbtn:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);border-color:var(--ink-faint)}
+  .auth-status{font-size:13px;color:var(--ink-faint);margin-top:18px;min-height:18px}
+  .auth-eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent);margin-bottom:12px}
+  .auth-hi{font-family:'Fraunces',serif;font-size:30px;font-weight:600;letter-spacing:-.01em;line-height:1.15;margin-bottom:10px;color:var(--ink)}
+  .auth-sub{font-size:15px;color:var(--ink-soft);line-height:1.5;margin-bottom:28px}
+  .auth-themes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:6px}
+  .auth-chip{font-family:inherit;font-size:15px;font-weight:500;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);padding:10px 18px;border-radius:30px;cursor:pointer;transition:.15s;user-select:none}
+  .auth-chip:hover{border-color:var(--ink-faint)}
+  .auth-chip.on{font-weight:600}
+  .auth-count{font-size:13px;color:var(--ink-faint);margin:16px 0 8px;min-height:18px}
+  .auth-cta{font-family:inherit;font-size:16px;font-weight:600;width:100%;max-width:320px;color:#fff;background:var(--accent);border:none;padding:15px;border-radius:9px;cursor:pointer;transition:.15s;margin-top:14px}
+  .auth-cta:hover{background:#26483E}
+  .auth-cta:disabled{background:var(--line-strong);cursor:not-allowed}
 </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2F5D50">
@@ -216,7 +237,7 @@ let _mem=null;
 function loadSaved(){try{const r=localStorage.getItem(SAVE_KEY);return new Set(r?JSON.parse(r):[])}catch(e){_mem=_mem||[];return new Set(_mem)}}
 function persistSaved(){try{localStorage.setItem(SAVE_KEY,JSON.stringify([...saved]))}catch(e){_mem=[...saved]}}
 const saved=loadSaved();
-function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);persistSaved();updateBadge();renderSaved()}
+function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);persistSaved();updateBadge();renderSaved();if(window.brevePersist)window.brevePersist()}
 function updateBadge(){const b=document.getElementById('saved-badge');if(saved.size>0){b.textContent=saved.size;b.style.display='inline-block'}else{b.style.display='none'}}
 
 // Données de secours, figées : utilisées si le chargement de la revue du jour échoue.
@@ -507,9 +528,9 @@ document.addEventListener('click',function(e){
   const nav=e.target.closest('[data-go]');
   if(nav){show(nav.dataset.go);return}
   const rm=e.target.closest('[data-remove]');
-  if(rm){e.stopPropagation();const t=rm.dataset.remove;const i=CUSTOM.indexOf(t);if(i>-1)CUSTOM.splice(i,1);selected.delete(t);renderThemes();renderBrief();return}
+  if(rm){e.stopPropagation();const t=rm.dataset.remove;const i=CUSTOM.indexOf(t);if(i>-1)CUSTOM.splice(i,1);selected.delete(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
   const chip=e.target.closest('[data-theme]');
-  if(chip){const t=chip.dataset.theme;selected.has(t)?selected.delete(t):selected.add(t);renderThemes();renderBrief();return}
+  if(chip){const t=chip.dataset.theme;selected.has(t)?selected.delete(t):selected.add(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
   if(e.target.closest('#add-theme')){addCustomTheme();return}
   const seg=e.target.closest('[data-seg] button');
   if(seg){chosenCount=+seg.dataset.count;renderBrief();return}
@@ -546,9 +567,21 @@ async function loadLiveBreves(){
   }
 }
 
+// Expose à auth.js ce dont il a besoin pour la connexion et la synchro.
+window.THEMES=THEMES;
+window.CATCOLOR=CATCOLOR;
+window.cat=cat;
+window.selected=selected;
+window.saved=saved;
+// Ré-affiche toute l'app (après chargement des préférences depuis Supabase).
+window.breveRefresh=function(){renderThemes();renderBrief();updateBadge();renderSaved()};
+
+// Premier rendu (l'overlay de connexion s'affichera par-dessus tant que
+// l'utilisateur n'est pas connecté).
 renderThemes();renderBrief();updateBadge();renderSaved();
 loadLiveBreves();
 </script>
+<script type="module" src="auth.js"></script>
 
 <script src="notifications.js"></script>
 </body>
