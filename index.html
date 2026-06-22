@@ -219,7 +219,8 @@ const saved=loadSaved();
 function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);persistSaved();updateBadge();renderSaved()}
 function updateBadge(){const b=document.getElementById('saved-badge');if(saved.size>0){b.textContent=saved.size;b.style.display='inline-block'}else{b.style.display='none'}}
 
-const ARTICLES=[
+// Données de secours, figées : utilisées si le chargement de la revue du jour échoue.
+const FALLBACK_ARTICLES=[
   {id:0,theme:"International",priority:1,
    title:"Accord États-Unis–Iran : le texte de paix dévoilé",
    brief:"Après quatre mois de guerre, un protocole en 14 points est rendu public.",
@@ -330,6 +331,13 @@ const ARTICLES=[
      {outlet:"Météo-France",take:"Replace le risque sanitaire dans le contexte météo de l'épisode.",url:"https://meteofrance.com/actualites-et-dossiers/actualites/canicule-une-vague-de-chaleur-sinstalle-cette-semaine"}
    ]}
 ];
+
+// ARTICLES démarre sur les données de secours, puis sera remplacé par la revue
+// du jour si son chargement réussit (voir loadLiveBreves plus bas).
+let ARTICLES = FALLBACK_ARTICLES;
+
+// Adresse de la revue générée chaque matin par le backend (dépôt breve-backend).
+const LIVE_URL = "https://raw.githubusercontent.com/jbf75fr/breve-backend/main/public/breves.json";
 
 const ICONS={
   ext:'<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>',
@@ -516,7 +524,30 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&e.target&&e.target.id==='custom-theme'){e.preventDefault();addCustomTheme()}
 });
 
+// Charge la revue du jour depuis le backend. En cas d'échec (réseau, fichier
+// absent), on garde les données de secours déjà affichées : l'app n'est jamais vide.
+async function loadLiveBreves(){
+  try{
+    const res = await fetch(LIVE_URL, {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const data = await res.json();
+    if(data && Array.isArray(data.breves) && data.breves.length){
+      ARTICLES = data.breves;
+      // met à jour la date affichée si le backend l'a fournie
+      if(data.date_label){
+        const el = document.querySelector('.brand .date');
+        if(el) el.textContent = data.date_label;
+      }
+      // ré-affiche tout avec les vraies données
+      renderThemes();renderBrief();renderSaved();
+    }
+  }catch(e){
+    console.warn("Revue du jour indisponible, données de secours utilisées.", e);
+  }
+}
+
 renderThemes();renderBrief();updateBadge();renderSaved();
+loadLiveBreves();
 </script>
 
 <script src="notifications.js"></script>
