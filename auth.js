@@ -49,6 +49,17 @@ function buildOverlay() {
       </div>
     </div>
 
+    <div class="auth-screen" id="auth-welcome" style="display:none">
+      <div class="auth-wcontent">
+        <div class="auth-weyebrow" id="auth-weyebrow">Bienvenue sur Brève</div>
+        <h2 class="auth-wtitle" id="auth-wtitle"></h2>
+        <p class="auth-wtext" id="auth-wtext"></p>
+      </div>
+      <div class="auth-dots" id="auth-dots"></div>
+      <button class="auth-cta" id="auth-w-next">Suivant</button>
+      <button class="auth-skip" id="auth-w-skip">Passer</button>
+    </div>
+
     <div class="auth-screen" id="auth-onboard" style="display:none">
       <div class="auth-eyebrow">Bienvenue</div>
       <h2 class="auth-hi">Qu'aimeriez-vous suivre ?</h2>
@@ -80,11 +91,54 @@ function buildOverlay() {
     document.getElementById("auth-beta-panel").style.display = "none";
   });
 
+  document.getElementById("auth-w-next").addEventListener("click", nextWelcome);
+  document.getElementById("auth-w-skip").addEventListener("click", endWelcome);
+
   loadTally();
 }
 
-// Charge le script d'intégration Tally (gère le rendu et la hauteur dynamique
-// du formulaire beta). Si déjà chargé, on relance juste l'initialisation.
+// --- Carrousel de bienvenue (concept de Brève) ---
+const WELCOME_SLIDES = [
+  { title: "Une fois par jour",
+    text: "Une revue préparée chaque matin, qui s'arrête quand vous avez fait le tour. Pas de flux sans fin." },
+  { title: "Plusieurs sources",
+    text: "Chaque sujet est recoupé entre plusieurs médias, jamais une seule voix. Avec le lien vers les articles d'origine." },
+  { title: "Vous gardez la main",
+    text: "Vous choisissez vos thèmes. Brève vous montre l'essentiel, vous décidez du reste." },
+];
+let welcomeIndex = 0;
+
+function renderWelcome() {
+  const s = WELCOME_SLIDES[welcomeIndex];
+  document.getElementById("auth-wtitle").textContent = s.title;
+  document.getElementById("auth-wtext").textContent = s.text;
+  // points de progression
+  const dots = document.getElementById("auth-dots");
+  dots.innerHTML = "";
+  WELCOME_SLIDES.forEach((_, i) => {
+    const d = document.createElement("span");
+    d.className = "auth-dot" + (i === welcomeIndex ? " on" : "");
+    dots.appendChild(d);
+  });
+  // libellé du bouton sur le dernier écran
+  document.getElementById("auth-w-next").textContent =
+    welcomeIndex === WELCOME_SLIDES.length - 1 ? "Choisir mes thèmes" : "Suivant";
+}
+
+function nextWelcome() {
+  if (welcomeIndex < WELCOME_SLIDES.length - 1) {
+    welcomeIndex++;
+    renderWelcome();
+  } else {
+    endWelcome();
+  }
+}
+
+// Fin du carrousel → on passe au choix des thèmes.
+function endWelcome() {
+  showOverlay("onboard");
+}
+
 function loadTally() {
   const initialize = () => { if (window.Tally) window.Tally.loadEmbeds(); };
   if (window.Tally) { initialize(); return; }
@@ -100,7 +154,9 @@ function showOverlay(which) {
   const o = document.getElementById("auth-overlay");
   o.style.display = "flex";
   document.getElementById("auth-login").style.display = which === "login" ? "flex" : "none";
+  document.getElementById("auth-welcome").style.display = which === "welcome" ? "flex" : "none";
   document.getElementById("auth-onboard").style.display = which === "onboard" ? "flex" : "none";
+  if (which === "welcome") { welcomeIndex = 0; renderWelcome(); }
   if (which === "onboard") renderOnboardThemes();
 }
 
@@ -227,11 +283,11 @@ async function startSession(user, isFreshLogin) {
     window.breveRefresh();
     hideOverlay();
   } else {
-    // Première connexion : on propose l'onboarding des thèmes.
-    // On part d'une suggestion de thèmes pré-cochés.
+    // Première connexion : on présente d'abord le concept (carrousel de
+    // bienvenue), qui enchaîne ensuite sur le choix des thèmes.
     window.selected.clear();
     ["Politique", "International", "Culture"].forEach((t) => window.selected.add(t));
-    showOverlay("onboard");
+    showOverlay("welcome");
   }
 }
 
