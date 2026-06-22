@@ -40,6 +40,15 @@ function buildOverlay() {
         Continuer avec Google
       </button>
       <p class="auth-status" id="auth-status"></p>
+
+      <div class="auth-sep"><span>ou</span></div>
+
+      <div class="auth-beta">
+        <p class="auth-beta-intro">Pas encore d'accès ? Inscrivez-vous à la beta.</p>
+        <iframe data-tally-src="https://tally.so/embed/ODrbyk?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+                loading="lazy" width="100%" height="180" frameborder="0" marginheight="0" marginwidth="0"
+                title="Inscription à la beta de Brève"></iframe>
+      </div>
     </div>
 
     <div class="auth-screen" id="auth-onboard" style="display:none">
@@ -55,6 +64,21 @@ function buildOverlay() {
 
   document.getElementById("auth-google").addEventListener("click", signIn);
   document.getElementById("auth-ob-done").addEventListener("click", finishOnboarding);
+
+  loadTally();
+}
+
+// Charge le script d'intégration Tally (gère le rendu et la hauteur dynamique
+// du formulaire beta). Si déjà chargé, on relance juste l'initialisation.
+function loadTally() {
+  const initialize = () => { if (window.Tally) window.Tally.loadEmbeds(); };
+  if (window.Tally) { initialize(); return; }
+  if (document.querySelector('script[src="https://tally.so/widgets/embed.js"]')) return;
+  const s = document.createElement("script");
+  s.src = "https://tally.so/widgets/embed.js";
+  s.onload = initialize;
+  s.onerror = initialize;
+  document.body.appendChild(s);
 }
 
 function showOverlay(which) {
