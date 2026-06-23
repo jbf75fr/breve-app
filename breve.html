@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brève — ton actu, à ta mesure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7;--surface:#FFFFFF;--ink:#1A1916;--ink-soft:#5C5A53;--ink-faint:#908D84;
+    --line:#E7E4DC;--line-strong:#D4D0C6;--accent:#2F5D50;--accent-soft:#EAF1EE;--accent-ink:#214339;
+    --warm:#F4EFE7;--radius:14px;--radius-sm:9px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .serif,.disp,.read{font-family:'Fraunces',Georgia,serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+
+  header.top{padding:0;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(251,250,247,.86);backdrop-filter:blur(10px);z-index:20}
+  .top-in{display:flex;align-items:center;justify-content:space-between;max-width:1180px;width:100%;margin:0 auto;padding:22px 32px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:20px}
+  .brand .logo .a{color:#fff}
+  .brand .name{font-family:'Fraunces',serif;font-size:21px;font-weight:600;letter-spacing:.01em}
+  .brand .date{font-size:12px;color:var(--ink-faint)}
+  .nav{display:flex;gap:4px}
+  .nav button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:8px 15px;border-radius:8px;cursor:pointer;transition:.15s}
+  .nav button:hover{background:var(--warm);color:var(--ink)}
+  .nav button.active{background:var(--accent);color:#fff}
+  .badge{display:none;margin-left:4px;background:var(--accent);color:#fff;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px}
+  .nav button.active .badge{background:#fff;color:var(--accent)}
+
+  main{padding:40px 0 80px}
+  .page{display:none;animation:fade .3s ease}
+  .page.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .strip{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:22px}
+  .strip h1{font-family:'Fraunces',serif;font-size:38px;font-weight:600;line-height:1.08;letter-spacing:-.01em}
+  .strip-meta{font-size:13px;color:var(--ink-faint);margin-top:8px}
+  .themebar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 16px;padding-bottom:2px}
+  .themebar #themechips{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  @media(max-width:640px){.themebar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:14px}.themebar #themechips{flex-wrap:nowrap}.themebar::-webkit-scrollbar{display:none}.themebar .chip{flex:0 0 auto}}
+  .controls-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px}
+  .seg button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:9px 18px;border-radius:7px;cursor:pointer;transition:.15s}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:500}
+
+  /* list as cards */
+  .list{display:grid;gap:16px;grid-template-columns:repeat(2,1fr)}
+  @media(max-width:760px){.list{grid-template-columns:1fr}}
+  .entry{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;cursor:pointer;transition:.18s;display:flex;gap:14px;align-items:flex-start}
+  .entry:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+  .e-num{display:none}
+  .e-body{flex:1;min-width:0}
+  .e-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:6px;display:inline-block}
+  .e-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
+  .e-brief{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  .e-aside{font-size:11px;color:var(--ink-faint);text-align:right;white-space:nowrap;padding-top:2px}
+  .e-aside .src-n{display:block;font-size:16px;font-weight:600;color:var(--ink-soft);font-family:'Fraunces',serif}
+
+  .endplate{text-align:center;padding:42px 0 6px;color:var(--ink-faint);font-size:14px;border-top:1px solid var(--line);margin-top:34px}
+  .endplate .mark{font-family:'Fraunces',serif;font-size:18px;color:var(--ink-soft);margin-bottom:5px}
+  .endplate .sub{font-size:13px}
+  .empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
+  .empty .serif{font-size:19px;color:var(--ink-soft);margin-bottom:6px}
+  .empty .sub{font-size:14px}
+
+  .back{font-family:inherit;font-size:14px;color:var(--accent);background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:6px 0;margin-bottom:22px}
+  .article{max-width:720px}
+  .a-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:inline-block;margin-bottom:10px}
+  .a-title{font-family:'Fraunces',serif;font-size:clamp(28px,4.5vw,34px);font-weight:600;line-height:1.14;letter-spacing:-.01em;margin-bottom:14px}
+  .a-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}
+  .a-meta .m-left{font-size:13px;color:var(--ink-faint)}
+  .save-btn{font-family:inherit;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;cursor:pointer;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink-soft);transition:.13s}
+  .save-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .save-btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  .a-lead{font-size:16.5px;color:var(--ink);line-height:1.72;margin-bottom:22px}
+  .a-body{font-size:16.5px;color:var(--ink);line-height:1.72;margin-bottom:34px}
+
+  .sources-h{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:5px;display:flex;align-items:baseline;gap:10px}
+  .sources-h .n{font-size:13px;font-weight:600;color:var(--accent);font-family:'Inter',sans-serif}
+  .sources-rule{height:0;margin-bottom:16px}
+  .source{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius-sm);margin-bottom:10px;background:var(--surface);transition:.14s;cursor:pointer}
+  .source:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(26,25,22,.05)}
+  .source .s-name{font-size:15px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .source .s-name .tick{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+  .source .s-take{font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  .source .s-read{font-size:12.5px;color:var(--accent);font-weight:500;flex-shrink:0;display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .source:hover .s-read{text-decoration:underline}
+
+  .chip{font-family:inherit;font-size:14px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);padding:8px 17px;border-radius:30px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);font-weight:500}
+  .chip .x{font-size:15px;line-height:1;opacity:.7;margin-left:2px}
+  .searchchip{display:inline-flex;align-items:center;gap:5px;border:1px dashed var(--line-strong);background:var(--surface);border-radius:30px;padding:7px 14px;cursor:text;transition:.15s}
+  .searchchip:hover{border-color:var(--accent)}
+  .searchchip:focus-within{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+  .searchchip .plus{font-size:16px;color:var(--ink-faint);line-height:1;font-weight:500}
+  .searchchip:focus-within .plus{color:var(--accent)}
+  .searchchip input{border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;color:var(--ink);width:78px;transition:width .2s}
+  .searchchip input::placeholder{color:var(--ink-faint)}
+  .searchchip:focus-within input{width:150px}
+
+  .ic{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="logo">B</span>
+      <div><div class="name">Brève</div><div class="date">Samedi 20 juin</div></div>
+    </div>
+    <nav class="nav">
+      <button id="nav-brief" class="active" data-go="brief">La revue</button>
+      <button id="nav-saved" data-go="saved">Mes brèves <span class="badge" id="saved-badge">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section id="page-brief" class="page show">
+      <div class="strip">
+        <div>
+          <h1 class="serif">Votre revue</h1>
+          <div class="strip-meta" id="strip-meta"></div>
+        </div>
+        <div class="controls-row">
+          <div class="seg" data-seg>
+            <button data-count="5">5</button>
+            <button data-count="10">10</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="themebar" id="themebar">
+        <span id="themechips"></span>
+        <label class="searchchip" id="searchchip" title="Rechercher un sujet">
+          <span class="plus">+</span>
+          <input id="custom-theme" type="text" maxlength="28" placeholder="sujet…" autocomplete="off">
+        </label>
+      </div>
+      <p id="search-feedback" style="font-size:13px;margin:-16px 0 22px;display:none"></p>
+
+      <div class="list" id="list"></div>
+
+      <div class="empty" id="brief-empty" style="display:none">
+        <div class="serif">Le sommaire est vide</div>
+        <div class="sub">Ouvrez les réglages pour choisir vos sujets.</div>
+      </div>
+      <div class="endplate" id="brief-end">
+        <div class="mark">C'est tout pour aujourd'hui.</div>
+        <div class="sub">Prochaine revue demain à 8 h.</div>
+      </div>
+    </section>
+
+    <section id="page-detail" class="page">
+      <button class="back" data-go="brief">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour à la revue
+      </button>
+      <article class="article" id="detail"></article>
+    </section>
+
+    <section id="page-saved" class="page">
+      <div class="strip">
+        <div>
+          <h1 class="serif">Mes brèves</h1>
+          <div class="strip-meta">Les brèves que vous avez conservées</div>
+        </div>
+      </div>
+      <div class="list" id="saved-list"></div>
+      <div class="empty" id="saved-empty">
+        <div class="serif">Aucune brève conservée</div>
+        <div class="sub">Dans une brève, touchez « Conserver » pour la retrouver ici.</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const THEMES=["Politique","Économie","International","Technologie","Sciences","Culture","Sport","Climat","Santé"];
+const CUSTOM=[];
+const selected=new Set(["Politique","International","Technologie","Économie","Culture","Sciences","Sport","Climat","Santé"]);
+let chosenCount=5;
+
+/* couleurs d'accent par thème (sobres, encrées) */
+const CATCOLOR={
+  International:"#7C2B2B", Technologie:"#3C4A33", "Économie":"#B5762A",
+  Politique:"#5E1E1E", Sciences:"#4A5A6B", Culture:"#8A3A5E",
+  Sport:"#2E5E55", "Santé":"#9C4A2E", Climat:"#4A6B3C"
+};
+function cat(t){return CATCOLOR[t]||"#5A4B3C"}
+
+const SAVE_KEY="breve.saved.v2";
+let _mem=null;
+function loadSaved(){try{const r=localStorage.getItem(SAVE_KEY);return new Set(r?JSON.parse(r):[])}catch(e){_mem=_mem||[];return new Set(_mem)}}
+function persistSaved(){try{localStorage.setItem(SAVE_KEY,JSON.stringify([...saved]))}catch(e){_mem=[...saved]}}
+const saved=loadSaved();
+function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);persistSaved();updateBadge();renderSaved()}
+function updateBadge(){const b=document.getElementById('saved-badge');if(saved.size>0){b.textContent=saved.size;b.style.display='inline-block'}else{b.style.display='none'}}
+
+const ARTICLES=[
+  {id:0,theme:"International",priority:1,
+   title:"Accord États-Unis–Iran : le texte de paix dévoilé",
+   brief:"Après quatre mois de guerre, un protocole en 14 points est rendu public.",
+   summary:"Les États-Unis et l'Iran sont parvenus à un accord de paix le 14 juin, rendu public le 17. Téhéran s'engage à diluer ses stocks d'uranium enrichi en échange d'une levée des sanctions, dans le cadre de négociations à mener sous 60 jours.",
+   full:"Les autorités américaines ont dévoilé le texte du protocole d'accord conclu avec l'Iran le dimanche 14 juin, après presque quatre mois de guerre. Renommé « déclaration d'Islamabad », le texte comporte 14 points et prévoit la fin des affrontements, la réouverture du détroit d'Ormuz et l'engagement de Téhéran à diluer ses stocks d'uranium enrichi, en échange de la levée des sanctions économiques américaines. Le mécanisme de mise en œuvre doit être formulé dans un délai de 60 jours, et l'accord final serait approuvé par une résolution du Conseil de sécurité des Nations unies.",
+   angles:[
+     {outlet:"CNews",take:"Détaille les 14 points du protocole et le calendrier de signature.",url:"https://www.cnews.fr/monde/2026-06-14/guerre-au-moyen-orient-ce-que-lon-sait-de-laccord-qui-doit-etre-signe-ce-dimanche"},
+     {outlet:"Banque de France",take:"Évalue l'impact du conflit et de l'accord sur les projections économiques.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"}
+   ]},
+  {id:1,theme:"Technologie",priority:2,
+   title:"Deezer lance un détecteur de musique générée par IA",
+   brief:"Un outil gratuit scanne les playlists de 20 plateformes de streaming.",
+   summary:"La plateforme française Deezer a lancé le 11 juin un détecteur en ligne gratuit, qui révèle la proportion de titres entièrement générés par IA dans une playlist, y compris sur Spotify, Apple Music ou YouTube Music.",
+   full:"Deezer a annoncé le 11 juin le lancement d'un détecteur gratuit permettant aux utilisateurs d'une vingtaine de plateformes de streaming de scanner leurs playlists pour y repérer les morceaux entièrement générés par intelligence artificielle. L'utilisateur connecte son compte depuis le site de détection, puis l'outil analyse les listes créées et révèle le pourcentage de titres concernés, sans préciser lesquels. Deezer, qui étiquette la musique générée par IA depuis 2025, indique en avoir signalé 13,4 millions de titres cette année-là.",
+   angles:[
+     {outlet:"franceinfo",take:"Explique le fonctionnement de l'outil et cite l'AFP.",url:"https://www.franceinfo.fr/culture/musique/deezer-lance-un-detecteur-gratuit-pour-reperer-la-musique-generee-par-ia-dans-les-playlists_8055812.html"},
+     {outlet:"CNews",take:"Met en avant la réaction du PDG de Deezer.",url:"https://www.cnews.fr/culture/2026-06-11/intelligence-artificielle-deezer-lance-un-detecteur-de-musique-creee-par-ia"},
+     {outlet:"RTS",take:"Couverture factuelle resserrée du lancement.",url:"https://www.rts.ch/info/culture/musiques/2026/article/deezer-lance-un-detecteur-gratuit-pour-identifier-la-musique-par-ia-29271727.html"}
+   ]},
+  {id:2,theme:"Économie",priority:3,
+   title:"Le prix repère du gaz baisse de 4,8 % au 1er juin",
+   brief:"Une économie d'environ 85 € par an pour un ménage type.",
+   summary:"Le prix repère de vente du gaz recule de 4,8 % à compter du 1er juin, sous l'effet de la modération des cours internationaux. Pour un ménage consommant 12 000 kWh par an, cela représente environ 85 € d'économie annuelle.",
+   full:"À compter du 1er juin, le prix repère de vente du gaz diminue de 4,8 %, un recul attribué à la modération des cours internationaux du gaz naturel et à l'amélioration de la situation géopolitique en Europe de l'Est. Pour un ménage type consommant 12 000 kWh par an, cette baisse représente une économie annuelle d'environ 85 € sur la facture. Elle s'ajoute à une revalorisation du Smic intervenue le même jour, dans un contexte de débat sur les finances publiques.",
+   angles:[
+     {outlet:"Politique Matin",take:"Replace la baisse dans l'ensemble des mesures budgétaires du mois.",url:"https://www.politiquematin.fr/juin-2026-portefeuille-francais-changements"},
+     {outlet:"SocialMag",take:"Liste les changements concrets pour le portefeuille des Français.",url:"https://www.socialmag.news/31/05/2026/juin-2026-changements-portefeuille/"}
+   ]},
+  {id:3,theme:"Économie",priority:4,
+   title:"La Banque de France publie ses projections de juin",
+   brief:"Plusieurs scénarios face à un environnement international incertain.",
+   summary:"La Banque de France présente ses projections macroéconomiques dans un contexte marqué par le conflit au Moyen-Orient. Elle propose plusieurs scénarios, cohérents avec ceux de la BCE, sans intégrer l'annonce du 14 juin sur l'accord États-Unis–Iran.",
+   full:"La Banque de France a diffusé ses projections macroéconomiques de juin, réalisées dans un environnement international jugé particulièrement incertain en raison de la poursuite du conflit au Moyen-Orient déclenché le 28 février. Ces projections, cohérentes avec celles publiées par la Banque centrale européenne pour l'Eurosystème le 11 juin, ne tiennent pas compte de l'annonce du 14 juin relative à un possible accord-cadre entre les États-Unis et l'Iran. Dans ce contexte mouvant, l'institution présente plusieurs scénarios.",
+   angles:[
+     {outlet:"Banque de France",take:"Source primaire : les projections et leurs hypothèses.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"},
+     {outlet:"Boursorama",take:"Relie les projections au contexte économique et de marché.",url:"https://www.boursorama.com/actualite-economique/"}
+   ]},
+  {id:4,theme:"Politique",priority:5,
+   title:"Loi IA et culture : le texte bloqué à l'Assemblée",
+   brief:"Voté à l'unanimité au Sénat, freiné par une centaine d'amendements.",
+   summary:"Le 11 juin, la proposition de loi instaurant une « présomption d'utilisation » des contenus culturels par les fournisseurs d'IA, adoptée à l'unanimité au Sénat, a été bloquée à l'Assemblée par une avalanche d'amendements de dernière minute.",
+   full:"Le 11 juin, une proposition de loi transpartisane instaurant une « présomption d'utilisation » des contenus culturels par les fournisseurs d'intelligence artificielle a été bloquée à l'Assemblée nationale. Le texte, adopté à l'unanimité au Sénat début avril et porté en séance par le député Emmanuel Maurel, visait à inverser la charge de la preuve : aux entreprises de la tech de démontrer la légalité de leurs données d'entraînement. Des députés du bloc central ont déposé plus d'une centaine d'amendements de dernière minute, freinant le débat. Le lobby de la tech redoutait une « insécurité juridique » pour les entreprises françaises de l'IA.",
+   angles:[
+     {outlet:"Eklecty-City",take:"Détaille le mécanisme du texte et la manœuvre d'obstruction.",url:"https://www.eklecty-city.fr/cinema/loi-ia-assemblee-nationale-lobbying-tech-doublage/"},
+     {outlet:"Sénat",take:"Source primaire : le dossier législatif et le parcours du texte.",url:"https://www.senat.fr/dossier-legislatif/ppl25-220.html"}
+   ]},
+  {id:5,theme:"Technologie",priority:6,
+   title:"L'IA dans les services publics au cœur d'un événement à Bercy",
+   brief:"Organisé à la veille de VivaTech par le ministre des Comptes publics.",
+   summary:"À la veille du salon VivaTech, le ministre de l'Action et des Comptes publics a organisé à Bercy un événement consacré au déploiement de l'intelligence artificielle dans les services publics, réunissant agents publics et acteurs du numérique français.",
+   full:"À la veille du salon VivaTech, David Amiel, ministre de l'Action et des Comptes publics, a organisé à Bercy un événement consacré au déploiement de l'intelligence artificielle dans les services publics. La rencontre réunissait des agents publics et des acteurs du numérique français, dans la continuité des annonces du gouvernement sur la modernisation de l'État et le soutien à la filière IA nationale.",
+   angles:[
+     {outlet:"economie.gouv.fr",take:"Source officielle : présentation de l'événement et de ses objectifs.",url:"https://www.economie.gouv.fr/actualites"},
+     {outlet:"DILA",take:"Replace l'IA publique dans les données clés de la France 2026.",url:"https://www.dila.gouv.fr/actualites/presse/communiques/article/france-2026-actualites-et-donnees-cles"}
+   ]},
+  {id:6,theme:"Culture",priority:7,
+   title:"Affaire Patrick Bruel : placement en garde à vue",
+   brief:"Dans le cadre de plaintes pour violences sexuelles.",
+   summary:"Patrick Bruel a été placé en garde à vue dans le cadre de plaintes pour violences sexuelles déposées contre lui. L'affaire fait l'objet d'un suivi judiciaire, avec mise en examen et contrôle judiciaire évoqués.",
+   full:"Patrick Bruel a été placé en garde à vue dans le cadre de plaintes pour violences sexuelles déposées contre lui. Les éléments rapportés évoquent une mise en examen, des accusations et un contrôle judiciaire. L'affaire s'inscrit dans une série de procédures médiatisées et reste, à ce stade, soumise à l'instruction.",
+   angles:[
+     {outlet:"franceinfo",take:"Fait le point sur l'état de la procédure judiciaire.",url:"https://www.franceinfo.fr/replay-jt/france-2/20-heures/jt-de-20h-du-lundi-08-juin-2026_8015666.html"},
+     {outlet:"Boursorama",take:"Reprend le fil d'actualité sur la garde à vue.",url:"https://www.boursorama.com/actualite-economique/"}
+   ]},
+  {id:7,theme:"Sciences",priority:8,
+   title:"INSEE : la France pourrait perdre 3,2 millions d'habitants d'ici 2070",
+   brief:"Une population plus âgée, et un pic à 69,8 millions attendu en 2037.",
+   summary:"Selon les projections de l'INSEE publiées le 8 juin, la France compterait 65,9 millions d'habitants en 2070 si les tendances se prolongeaient, soit 3,2 millions de moins qu'en 2026. La population vieillirait nettement.",
+   full:"Dans ses projections publiées le 8 juin, l'INSEE anticipe une France moins peuplée et plus âgée. Si les tendances démographiques récentes se prolongeaient, le pays compterait 65,9 millions d'habitants en 2070, soit 3,2 millions de moins qu'en 2026, après un pic à 69,8 millions en 2037. Le solde naturel devenu négatif ne serait plus compensé par le solde migratoire à partir de 2037. Le nombre de personnes de 80 ans ou plus augmenterait de 4,6 millions, et celui des centenaires pourrait quadrupler. L'institut rappelle qu'il s'agit de projections, non d'une prévision figée.",
+   angles:[
+     {outlet:"INSEE",take:"Source primaire : l'étude complète et ses chiffres détaillés.",url:"https://www.insee.fr/fr/statistiques/9004289"},
+     {outlet:"Banque des Territoires",take:"Souligne les défis de dépendance et d'accueil des plus âgés.",url:"https://www.banquedesterritoires.fr/demographie-linsee-anticipe-une-france-moins-peuplee-et-plus-agee-en-2070"}
+   ]},
+  {id:8,theme:"International",priority:9,
+   title:"Gare de l'Est : trafic interrompu après une panne électrique",
+   brief:"Une panne d'alimentation a stoppé tout le trafic au départ de Paris.",
+   summary:"Une panne d'alimentation électrique générale a interrompu, à partir de 18h30, tout le trafic ferroviaire au départ de la gare de l'Est à Paris, a annoncé la SNCF, qui a évoqué une reprise au plus tôt en soirée.",
+   full:"Le réseau ferroviaire au départ de la gare de l'Est à Paris a subi une panne d'alimentation électrique générale à partir de 18h30, interrompant tout le trafic au départ de cette gare au moins jusqu'à 22h00, selon SNCF Gares et Connexions. Des équipes ont été mobilisées pour rétablir l'alimentation, l'incident affectant les départs aux heures de pointe.",
+   angles:[
+     {outlet:"Boursorama (Reuters)",take:"Reprend la dépêche d'agence sur l'incident et ses horaires.",url:"https://www.boursorama.com/actualite-economique/"},
+     {outlet:"Yahoo Actualités",take:"Replace l'incident dans le fil d'actualité du jour.",url:"https://fr.news.yahoo.com/sport/l-info-jour-20-juin-050007657.html"}
+   ]},
+  {id:9,theme:"Sport",priority:10,
+   title:"Coupe du monde 2026 : quatre matchs au programme ce samedi",
+   brief:"Dixième jour du Mondial, avec la Tunisie face au Japon.",
+   summary:"Ce samedi 20 juin marque le dixième jour de la Coupe du monde de football 2026, organisée aux États-Unis, au Canada et au Mexique. Quatre matchs sont au programme, dont la deuxième sortie de la Tunisie face au Japon. La France, elle, occupe la deuxième place de son groupe.",
+   full:"Le dixième jour de la Coupe du monde 2026 propose quatre rencontres ce samedi 20 juin, notamment la deuxième sortie de la Tunisie face au Japon. Première édition à 48 équipes, le tournoi se déroule du 11 juin au 19 juillet sur le continent nord-américain, avec l'introduction de seizièmes de finale. Dans le groupe des Bleus, le classement place la Norvège en tête devant la France, avant un duel décisif à venir entre les deux nations. En France, les matchs sont diffusés sur beIN Sports et M6.",
+   angles:[
+     {outlet:"Olympics.com",take:"Donne le programme complet et les horaires des matchs du jour.",url:"https://www.olympics.com/fr/infos/coupe-du-monde-2026-samedi-20-juin-programme-resultat-aujourdhui-nuit-direct-mondial-football"},
+     {outlet:"FFF",take:"Source officielle : classements groupe par groupe et calendrier des Bleus.",url:"https://www.fff.fr/article/16957-tout-sur-la-coupe-du-monde-fifa-2026.html"}
+   ]},
+  {id:10,theme:"Climat",priority:11,
+   title:"Canicule : 82 départements en vigilance ce samedi",
+   brief:"Un nouvel épisode caniculaire, plus sévère, culmine les 21 et 22 juin.",
+   summary:"La France connaît un nouvel épisode de chaleur intense, le deuxième de l'année. Ce samedi 20 juin, 82 départements sont en vigilance, avec un pic attendu les 21 et 22 juin où les températures dépasseraient largement 40 °C dans de nombreuses régions.",
+   full:"La France traverse un nouvel épisode caniculaire, déjà le deuxième de l'année après celui de fin mai. Ce samedi 20 juin, 82 départements sont placés en vigilance, l'alerte canicule étant notamment de mise des Alpes aux Pyrénées, en Île-de-France et en Centre-Val de Loire. Le pic est attendu les 21 et 22 juin, avec des températures dépassant largement 40 °C par endroits. Selon Météo-France, cet épisode s'annonce plus sévère que tout ce qui a été connu à cette période, dans un contexte de sols asséchés après un printemps 2026 record. Il s'agit de la 52e vague de chaleur recensée depuis 1947, dont les deux tiers se sont produits depuis 2000.",
+   angles:[
+     {outlet:"Météo-France",take:"Source primaire : intensité de l'épisode et comparaison historique.",url:"https://meteofrance.com/actualites-et-dossiers/actualites/canicule-une-vague-de-chaleur-sinstalle-cette-semaine"},
+     {outlet:"franceinfo",take:"Détaille la carte des vigilances département par département.",url:"https://www.franceinfo.fr/environnement/meteo/bulletins-meteo/previsions-quotidiennes/meteo-du-20-juin-2026-alertes-canicule-en-cours-sur-le-territoire-francais_8071121.html"}
+   ]},
+  {id:11,theme:"Santé",priority:12,
+   title:"Canicule : Santé publique France appelle à la vigilance",
+   brief:"Les fortes chaleurs font peser un risque sanitaire sur la population.",
+   summary:"Face à l'épisode caniculaire, Santé publique France suit la situation sanitaire et rappelle les risques liés aux fortes chaleurs. Lors du précédent épisode de fin mai, déjà inédit, 26 % de la population avait été concernée par au moins un jour de vigilance orange.",
+   full:"Alors qu'un nouvel épisode caniculaire touche la France, Santé publique France assure le suivi sanitaire des fortes chaleurs et rappelle les gestes de prévention. Lors de la vague de chaleur de fin mai, qualifiée d'inédite et d'historique pour la saison, 17 départements avaient été placés en vigilance orange, exposant 26 % de la population résidente à au moins un jour d'alerte. Selon une étude européenne, les températures observées lors de cet épisode seraient imputables au changement climatique, ce qui place la prévention des risques sanitaires liés à la chaleur au cœur des préoccupations de l'agence.",
+   angles:[
+     {outlet:"Santé publique France",take:"Source primaire : le bulletin national canicule et santé.",url:"https://www.santepubliquefrance.fr/climat/fortes-chaleurs-canicule/bulletin-national/canicule-et-sante-en-france-bulletin-du-4-juin-2026"},
+     {outlet:"Météo-France",take:"Replace le risque sanitaire dans le contexte météo de l'épisode.",url:"https://meteofrance.com/actualites-et-dossiers/actualites/canicule-une-vague-de-chaleur-sinstalle-cette-semaine"}
+   ]}
+];
+
+const ICONS={
+  ext:'<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>',
+  arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  bookmark:'<path d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z"/>',
+  bookmarkOn:'<path d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" fill="currentColor"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 13a1 1 0 001 1h10a1 1 0 001-1l1-13M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/>'
+};
+function svg(p){return '<svg class="ic" viewBox="0 0 24 24">'+p+'</svg>'}
+function pad(n){return n<10?'0'+n:''+n}
+
+/* ---------- themes ---------- */
+function hexSoft(hex){
+  // version très claire de la couleur pour le fond de pastille
+  const h=hex.replace('#','');
+  const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+  return 'rgba('+r+','+g+','+b+',0.10)';
+}
+function styleChip(b,t,on){
+  const col=cat(t);
+  if(on){b.style.background=hexSoft(col);b.style.borderColor=col;b.style.color=col}
+  else{b.style.background='';b.style.borderColor='';b.style.color=''}
+}
+function fillThemes(c,withRemove){
+  c.innerHTML='';
+  THEMES.forEach(t=>{
+    const on=selected.has(t);
+    const b=document.createElement('button');
+    b.className='chip'+(on?' on':'');b.dataset.theme=t;
+    b.textContent=t;
+    styleChip(b,t,on);
+    c.appendChild(b);
+  });
+  CUSTOM.forEach(t=>{
+    const on=selected.has(t);
+    const b=document.createElement('button');
+    b.className='chip'+(on?' on':'');b.dataset.theme=t;
+    if(withRemove)b.innerHTML=t+'<span class="x" data-remove="'+t+'" title="Retirer">×</span>';
+    else b.textContent=t;
+    styleChip(b,t,on);
+    c.appendChild(b);
+  });
+}
+function renderThemes(){
+  const bar=document.getElementById('themechips');
+  if(bar)fillThemes(bar,true);
+}
+function addCustomTheme(){
+  const input=document.getElementById('custom-theme');
+  const fb=document.getElementById('search-feedback');
+  let v=input.value.trim().replace(/\s+/g,' ');
+  if(!v)return;
+  v=v.charAt(0).toUpperCase()+v.slice(1);
+  const all=THEMES.concat(CUSTOM);
+  const existing=all.find(t=>t.toLowerCase()===v.toLowerCase());
+  if(!existing)CUSTOM.push(v);
+  const name=existing||v;
+  selected.add(name);
+  input.value='';
+  renderThemes();renderBrief();input.focus();
+  const kw=name.toLowerCase();
+  const matches=ARTICLES.filter(a=>THEMES.includes(name)?a.theme===name:(a.title+' '+a.summary+' '+a.full+' '+a.theme).toLowerCase().includes(kw)).length;
+  fb.style.display='block';
+  if(matches>0){fb.textContent='« '+name+' » ajouté — '+matches+' brève'+(matches>1?'s':'')+' aujourd\u2019hui.';fb.style.color='var(--accent)'}
+  else{fb.textContent='« '+name+' » ajouté — rien aujourd\u2019hui, mais vous serez servi dès qu\u2019il y aura de quoi.';fb.style.color='var(--ink-faint)'}
+}
+
+/* ---------- selection logic ---------- */
+function articleMatches(a){
+  if(selected.has(a.theme))return true;
+  const hay=(a.title+' '+a.summary+' '+a.full+' '+a.theme).toLowerCase();
+  for(const t of CUSTOM){if(selected.has(t)&&hay.includes(t.toLowerCase()))return true}
+  return false;
+}
+function pickArticles(){
+  return ARTICLES.filter(articleMatches).sort((a,b)=>a.priority-b.priority).slice(0,chosenCount);
+}
+function syncSegs(){
+  document.querySelectorAll('[data-seg] button').forEach(b=>b.classList.toggle('on',+b.dataset.count===chosenCount));
+}
+
+/* ---------- revue list ---------- */
+function entryRow(a,i){
+  const c=cat(a.theme);
+  return '<div class="entry" data-open="'+a.id+'">'+
+    '<div class="e-num">'+pad(i+1)+'</div>'+
+    '<div class="e-body">'+
+      '<span class="e-cat" style="color:'+c+'">'+a.theme+'</span>'+
+      '<div class="e-title">'+a.title+'</div>'+
+      '<div class="e-brief">'+a.brief+'</div>'+
+    '</div>'+
+  '</div>';
+}
+function renderBrief(){
+  const list=pickArticles();
+  const n=selected.size;
+  const meta=document.getElementById('strip-meta');
+  const empty=document.getElementById('brief-empty');
+  const end=document.getElementById('brief-end');
+  const wrap=document.getElementById('list');
+  if(n===0){
+    meta.textContent='aucun thème sélectionné';
+    wrap.innerHTML='';empty.style.display='block';end.style.display='none';syncSegs();return;
+  }
+  empty.style.display='none';end.style.display='block';
+  meta.textContent=list.length+' brève'+(list.length>1?'s':'')+' · '+n+' thème'+(n>1?'s':'');
+  wrap.innerHTML=list.map(entryRow).join('');
+  syncSegs();
+}
+
+/* ---------- detail ---------- */
+function openDetail(id){
+  const a=ARTICLES.find(x=>x.id===id);
+  const isSaved=saved.has(id);const c=cat(a.theme);
+  const d=document.getElementById('detail');
+  d.innerHTML=
+    '<span class="a-cat" style="color:'+c+'">'+a.theme+'</span>'+
+    '<h1 class="a-title">'+a.title+'</h1>'+
+    '<div class="a-meta"><span class="m-left">'+a.angles.length+' sources croisées</span>'+
+      '<button class="save-btn'+(isSaved?' on':'')+'" data-save="'+id+'">'+svg(isSaved?ICONS.bookmarkOn:ICONS.bookmark)+(isSaved?'Conservée':'Conserver')+'</button>'+
+    '</div>'+
+    '<p class="a-lead">'+a.summary+'</p>'+
+    '<div class="a-body">'+a.full+'</div>'+
+    '<div class="sources-h disp">Sources</div>'+
+    '<div class="sources-rule"></div>'+
+    a.angles.map(g=>
+      '<a class="source" href="'+g.url+'" target="_blank" rel="noopener noreferrer">'+
+        '<div><div class="s-name"><span class="tick"></span>'+g.outlet+'</div><div class="s-take">'+g.take+'</div></div>'+
+        '<span class="s-read">Lire '+svg(ICONS.ext)+'</span>'+
+      '</a>'
+    ).join('');
+  show('detail');
+}
+
+/* ---------- saved ---------- */
+function renderSaved(){
+  const wrap=document.getElementById('saved-list');
+  const empty=document.getElementById('saved-empty');
+  const list=ARTICLES.filter(a=>saved.has(a.id));
+  if(list.length===0){wrap.innerHTML='';empty.style.display='block';return}
+  empty.style.display='none';
+  wrap.innerHTML=list.map((a,i)=>{
+    const c=cat(a.theme);
+    return '<div class="entry" data-open="'+a.id+'">'+
+      '<div class="e-num">'+pad(i+1)+'</div>'+
+      '<div class="e-body">'+
+        '<span class="e-cat" style="color:'+c+'">'+a.theme+'</span>'+
+        '<div class="e-title">'+a.title+'</div>'+
+        '<div class="e-brief">'+a.brief+'</div>'+
+      '</div>'+
+      '<div class="e-aside"><button class="modal-close" data-unsave="'+a.id+'" title="Retirer" style="color:var(--ink-faint)">'+svg(ICONS.trash)+'</button></div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ---------- nav ---------- */
+function show(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('show'));
+  document.getElementById('page-'+p).classList.add('show');
+  document.getElementById('nav-brief').classList.toggle('active',p==='brief'||p==='detail');
+  document.getElementById('nav-saved').classList.toggle('active',p==='saved');
+  if(p==='saved')renderSaved();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.addEventListener('click',function(e){
+  const nav=e.target.closest('[data-go]');
+  if(nav){show(nav.dataset.go);return}
+  const rm=e.target.closest('[data-remove]');
+  if(rm){e.stopPropagation();const t=rm.dataset.remove;const i=CUSTOM.indexOf(t);if(i>-1)CUSTOM.splice(i,1);selected.delete(t);renderThemes();renderBrief();return}
+  const chip=e.target.closest('[data-theme]');
+  if(chip){const t=chip.dataset.theme;selected.has(t)?selected.delete(t):selected.add(t);renderThemes();renderBrief();return}
+  if(e.target.closest('#add-theme')){addCustomTheme();return}
+  const seg=e.target.closest('[data-seg] button');
+  if(seg){chosenCount=+seg.dataset.count;renderBrief();return}
+  const save=e.target.closest('[data-save]');
+  if(save){e.stopPropagation();const id=+save.dataset.save;toggleSave(id);openDetail(id);return}
+  const unsave=e.target.closest('[data-unsave]');
+  if(unsave){e.stopPropagation();toggleSave(+unsave.dataset.unsave);return}
+  const card=e.target.closest('[data-open]');
+  if(card){openDetail(+card.dataset.open);return}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target&&e.target.id==='custom-theme'){e.preventDefault();addCustomTheme()}
+});
+
+renderThemes();renderBrief();updateBadge();renderSaved();
+</script>
+
+</body>
+</html>
