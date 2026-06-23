@@ -64,10 +64,8 @@
   .e-aside .src-n{display:block;font-size:16px;font-weight:600;color:var(--ink-soft);font-family:'Fraunces',serif}
 
   .endplate{text-align:center;padding:42px 0 6px;color:var(--ink-faint);font-size:14px;border-top:1px solid var(--line);margin-top:34px}
-  .account{text-align:center;padding:28px 0 8px;border-top:1px solid var(--line);margin-top:34px}
-  .account-email{font-size:13px;color:var(--ink-faint);margin-bottom:12px;word-break:break-all}
-  .account-logout{font-family:inherit;font-size:14px;font-weight:500;color:var(--ink-soft);background:none;border:1px solid var(--line-strong);border-radius:30px;padding:10px 22px;cursor:pointer;transition:.15s}
-  .account-logout:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .logout-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);padding:8px;border-radius:8px;cursor:pointer;transition:.15s;margin-left:2px}
+  .logout-btn:hover{background:var(--warm);color:var(--ink)}
   .endplate .mark{font-family:'Fraunces',serif;font-size:18px;color:var(--ink-soft);margin-bottom:5px}
   .endplate .sub{font-size:13px}
   .notif-cta{margin-top:20px}
@@ -176,6 +174,9 @@
     <nav class="nav">
       <button id="nav-brief" class="active" data-go="brief">Votre revue</button>
       <button id="nav-saved" data-go="saved">Brèves enregistrées <span class="badge" id="saved-badge">0</span></button>
+      <button id="logout-btn" class="logout-btn" title="Se déconnecter" aria-label="Se déconnecter" style="display:none">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
     </nav>
   </div>
 </header>
@@ -232,11 +233,6 @@
       <div class="empty" id="saved-empty">
         <div class="serif">Aucune brève conservée</div>
         <div class="sub">Dans une brève, touchez « Conserver » pour la retrouver ici.</div>
-      </div>
-
-      <div class="account" id="account">
-        <div class="account-email" id="account-email"></div>
-        <button class="account-logout" id="account-logout">Se déconnecter</button>
       </div>
     </section>
   </div>
@@ -631,20 +627,14 @@ window.saved=saved;
 // Ré-affiche toute l'app (après chargement des préférences depuis Supabase).
 window.breveRefresh=function(){renderThemes();renderBrief();updateBadge();renderSaved()};
 
-// Zone compte : affiche l'email et masque le bloc tant qu'on n'est pas connecté.
+// Icône de déconnexion (en-tête) : visible seulement une fois connecté.
 window.breveUpdateAccount=function(){
-  const box=document.getElementById('account');
-  const em=document.getElementById('account-email');
-  if(!box||!em)return;
-  if(window.breveUserEmail){
-    em.textContent=window.breveUserEmail;
-    box.style.display='block';
-  }else{
-    box.style.display='none';
-  }
+  const btn=document.getElementById('logout-btn');
+  if(!btn)return;
+  btn.style.display=window.breveUserEmail?'flex':'none';
 };
 (function wireLogout(){
-  const btn=document.getElementById('account-logout');
+  const btn=document.getElementById('logout-btn');
   if(btn)btn.addEventListener('click',function(){
     if(window.breveSignOut)window.breveSignOut();
   });
