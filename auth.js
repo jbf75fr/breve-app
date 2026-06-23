@@ -49,6 +49,14 @@ function buildOverlay() {
       </div>
     </div>
 
+    <div class="auth-screen" id="auth-denied" style="display:none">
+      <div class="auth-logo">B</div>
+      <h2 class="auth-hi">Accès sur invitation</h2>
+      <p class="auth-sub">Brève est en accès limité pour le moment. Votre adresse ne figure pas encore parmi les comptes autorisés. Inscrivez-vous à la beta : nous vous préviendrons dès que votre accès sera ouvert.</p>
+      <button class="auth-cta" id="auth-denied-beta">S'inscrire à la beta</button>
+      <button class="auth-skip" id="auth-denied-back">Revenir à la connexion</button>
+    </div>
+
     <div class="auth-screen" id="auth-welcome" style="display:none">
       <div class="auth-wcontent">
         <div class="auth-weyebrow" id="auth-weyebrow">Bienvenue sur Brève</div>
@@ -93,6 +101,14 @@ function buildOverlay() {
 
   document.getElementById("auth-w-next").addEventListener("click", nextWelcome);
   document.getElementById("auth-w-skip").addEventListener("click", endWelcome);
+
+  document.getElementById("auth-denied-beta").addEventListener("click", () => {
+    document.getElementById("auth-beta-panel").style.display = "block";
+    loadTally();
+  });
+  document.getElementById("auth-denied-back").addEventListener("click", () => {
+    showOverlay("login");
+  });
 
   loadTally();
 }
@@ -154,6 +170,7 @@ function showOverlay(which) {
   const o = document.getElementById("auth-overlay");
   o.style.display = "flex";
   document.getElementById("auth-login").style.display = which === "login" ? "flex" : "none";
+  document.getElementById("auth-denied").style.display = which === "denied" ? "flex" : "none";
   document.getElementById("auth-welcome").style.display = which === "welcome" ? "flex" : "none";
   document.getElementById("auth-onboard").style.display = which === "onboard" ? "flex" : "none";
   if (which === "welcome") { welcomeIndex = 0; renderWelcome(); }
@@ -264,8 +281,37 @@ window.brevePersist = scheduleSave;
 
 // --------------------------------------------------------------------------- //
 //  Démarrage de la session
+// Vérifie si un email figure dans la liste blanche (allowlist) Supabase.
+// Comparaison insensible à la casse (on cherche en minuscules).
+async function isAllowed(email) {
+  const e = (email || "").trim().toLowerCase();
+  if (!e) return false;
+  try {
+    const { data, error } = await supabase
+      .from("allowlist")
+      .select("email")
+      .eq("email", e)
+      .maybeSingle();
+    if (error) throw error;
+    return !!data;
+  } catch (err) {
+    console.warn("Vérification de l'accès impossible :", err);
+    // En cas d'erreur technique, on refuse par prudence (sécurité d'abord).
+    return false;
+  }
+}
+
 // --------------------------------------------------------------------------- //
 async function startSession(user, isFreshLogin) {
+  // Contrôle d'accès : seuls les emails approuvés (allowlist) peuvent entrer.
+  const allowed = await isAllowed(user.email);
+  if (!allowed) {
+    showOverlay("denied");
+    await supabase.auth.signOut();   // on ferme la session non autorisée
+    currentUser = null;
+    return;
+  }
+
   currentUser = user;
 
   // Expose l'email à l'app pour l'afficher (zone compte).
