@@ -71,6 +71,9 @@
   .e-num{display:none}
   .e-body{flex:1;min-width:0}
   .e-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:6px;display:inline-block}
+  .e-cats{display:inline-flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px}
+  .e-cats .e-cat{margin-bottom:0;position:relative}
+  .e-cats .e-cat:not(:last-child)::after{content:"·";position:absolute;right:-7px;color:var(--ink-faint)}
   .e-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
   .e-brief{font-size:14px;color:var(--ink-soft);line-height:1.5}
   .e-savedat{font-size:12px;color:var(--ink-faint);margin-top:8px;font-style:italic}
@@ -121,6 +124,9 @@
   .back{font-family:inherit;font-size:14px;color:var(--accent);background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:6px 0;margin-bottom:22px}
   .article{max-width:720px}
   .a-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:inline-block;margin-bottom:10px}
+  .a-cats{display:inline-flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:4px}
+  .a-cats .a-cat{margin-bottom:6px;position:relative}
+  .a-cats .a-cat:not(:last-child)::after{content:"·";position:absolute;right:-9px;color:var(--ink-faint)}
   .a-title{font-family:'Fraunces',serif;font-size:clamp(28px,4.5vw,34px);font-weight:600;line-height:1.14;letter-spacing:-.01em;margin-bottom:14px}
   .a-meta{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}
   .a-meta .m-left{font-size:13px;color:var(--ink-faint)}
@@ -317,6 +323,16 @@ const CATCOLOR={
   "Santé":"#9C4A2E", Environnement:"#4A6B3C", "Société":"#4A5A6B", Insolite:"#7A5A8E"
 };
 function cat(t){return CATCOLOR[t]||"#5A4B3C"}
+// Tags d'une brève : gère le nouveau format (themes: []) et l'ancien (theme: "").
+function themesOf(a){
+  if(a && Array.isArray(a.themes) && a.themes.length) return a.themes;
+  if(a && a.theme) return [a.theme];
+  return [];
+}
+// HTML des pastilles de catégories d'une brève (toutes ses thématiques).
+function themeTags(a){
+  return themesOf(a).map(t=>'<span class="e-cat" style="color:'+cat(t)+'">'+t+'</span>').join('');
+}
 
 // Brèves enregistrées : on stocke le CONTENU COMPLET de la brève (pas juste son
 // numéro, qui change chaque jour) plus la date d'enregistrement. Ainsi une brève
@@ -351,7 +367,7 @@ function toggleSaveByKey(key, contentForAdd){
     saved.delete(key);
   }else if(contentForAdd){
     const a=contentForAdd;
-    saved.set(key,{theme:a.theme,title:a.title,brief:a.brief,summary:a.summary,
+    saved.set(key,{themes:themesOf(a),title:a.title,brief:a.brief,summary:a.summary,
                    full:a.full,angles:a.angles,savedAt:new Date().toISOString()});
   }
   persistSaved();updateBadge();renderSaved();renderBrief();
@@ -366,7 +382,7 @@ function toggleSave(id){
     saved.delete(k);
   }else{
     // On copie le contenu et on horodate l'enregistrement.
-    const copy={theme:a.theme,title:a.title,brief:a.brief,summary:a.summary,
+    const copy={themes:themesOf(a),title:a.title,brief:a.brief,summary:a.summary,
                 full:a.full,angles:a.angles,savedAt:new Date().toISOString()};
     saved.set(k,copy);
   }
@@ -377,7 +393,7 @@ function updateBadge(){const b=document.getElementById('saved-badge');if(saved.s
 
 // Données de secours, figées : utilisées si le chargement de la revue du jour échoue.
 const FALLBACK_ARTICLES=[
-  {id:0,theme:"Monde",priority:1,
+  {id:0,themes:["Monde"],priority:1,
    title:"Accord États-Unis-Iran : le texte de paix dévoilé",
    brief:"Après quatre mois de guerre, un protocole en 14 points est rendu public.",
    summary:"Les États-Unis et l'Iran sont parvenus à un accord de paix le 14 juin, rendu public le 17. Téhéran s'engage à diluer ses stocks d'uranium enrichi en échange d'une levée des sanctions, dans le cadre de négociations à mener sous 60 jours.",
@@ -386,7 +402,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"CNews",take:"Détaille les 14 points du protocole et le calendrier de signature.",url:"https://www.cnews.fr/monde/2026-06-14/guerre-au-moyen-orient-ce-que-lon-sait-de-laccord-qui-doit-etre-signe-ce-dimanche"},
      {outlet:"Banque de France",take:"Évalue l'impact du conflit et de l'accord sur les projections économiques.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"}
    ]},
-  {id:1,theme:"Tech & Sciences",priority:2,
+  {id:1,themes:["Tech & Sciences"],priority:2,
    title:"Deezer lance un détecteur de musique générée par IA",
    brief:"Un outil gratuit scanne les playlists de 20 plateformes de streaming.",
    summary:"La plateforme française Deezer a lancé le 11 juin un détecteur en ligne gratuit, qui révèle la proportion de titres entièrement générés par IA dans une playlist, y compris sur Spotify, Apple Music ou YouTube Music.",
@@ -396,7 +412,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"CNews",take:"Met en avant la réaction du PDG de Deezer.",url:"https://www.cnews.fr/culture/2026-06-11/intelligence-artificielle-deezer-lance-un-detecteur-de-musique-creee-par-ia"},
      {outlet:"RTS",take:"Couverture factuelle resserrée du lancement.",url:"https://www.rts.ch/info/culture/musiques/2026/article/deezer-lance-un-detecteur-gratuit-pour-identifier-la-musique-par-ia-29271727.html"}
    ]},
-  {id:2,theme:"Économie",priority:3,
+  {id:2,themes:["Économie"],priority:3,
    title:"Le prix repère du gaz baisse de 4,8 % au 1er juin",
    brief:"Une économie d'environ 85 € par an pour un ménage type.",
    summary:"Le prix repère de vente du gaz recule de 4,8 % à compter du 1er juin, sous l'effet de la modération des cours internationaux. Pour un ménage consommant 12 000 kWh par an, cela représente environ 85 € d'économie annuelle.",
@@ -405,7 +421,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Politique Matin",take:"Replace la baisse dans l'ensemble des mesures budgétaires du mois.",url:"https://www.politiquematin.fr/juin-2026-portefeuille-francais-changements"},
      {outlet:"SocialMag",take:"Liste les changements concrets pour le portefeuille des Français.",url:"https://www.socialmag.news/31/05/2026/juin-2026-changements-portefeuille/"}
    ]},
-  {id:3,theme:"Économie",priority:4,
+  {id:3,themes:["Économie"],priority:4,
    title:"La Banque de France publie ses projections de juin",
    brief:"Plusieurs scénarios face à un environnement international incertain.",
    summary:"La Banque de France présente ses projections macroéconomiques dans un contexte marqué par le conflit au Moyen-Orient. Elle propose plusieurs scénarios, cohérents avec ceux de la BCE, sans intégrer l'annonce du 14 juin sur l'accord États-Unis-Iran.",
@@ -414,7 +430,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Banque de France",take:"Source primaire : les projections et leurs hypothèses.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"},
      {outlet:"Boursorama",take:"Relie les projections au contexte économique et de marché.",url:"https://www.boursorama.com/actualite-economique/"}
    ]},
-  {id:4,theme:"France",priority:5,
+  {id:4,themes:["France"],priority:5,
    title:"Loi IA et culture : le texte bloqué à l'Assemblée",
    brief:"Voté à l'unanimité au Sénat, freiné par une centaine d'amendements.",
    summary:"Le 11 juin, la proposition de loi instaurant une « présomption d'utilisation » des contenus culturels par les fournisseurs d'IA, adoptée à l'unanimité au Sénat, a été bloquée à l'Assemblée par une avalanche d'amendements de dernière minute.",
@@ -423,7 +439,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Eklecty-City",take:"Détaille le mécanisme du texte et la manœuvre d'obstruction.",url:"https://www.eklecty-city.fr/cinema/loi-ia-assemblee-nationale-lobbying-tech-doublage/"},
      {outlet:"Sénat",take:"Source primaire : le dossier législatif et le parcours du texte.",url:"https://www.senat.fr/dossier-legislatif/ppl25-220.html"}
    ]},
-  {id:5,theme:"Tech & Sciences",priority:6,
+  {id:5,themes:["Tech & Sciences"],priority:6,
    title:"L'IA dans les services publics au cœur d'un événement à Bercy",
    brief:"Organisé à la veille de VivaTech par le ministre des Comptes publics.",
    summary:"À la veille du salon VivaTech, le ministre de l'Action et des Comptes publics a organisé à Bercy un événement consacré au déploiement de l'intelligence artificielle dans les services publics, réunissant agents publics et acteurs du numérique français.",
@@ -432,7 +448,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"economie.gouv.fr",take:"Source officielle : présentation de l'événement et de ses objectifs.",url:"https://www.economie.gouv.fr/actualites"},
      {outlet:"DILA",take:"Replace l'IA publique dans les données clés de la France 2026.",url:"https://www.dila.gouv.fr/actualites/presse/communiques/article/france-2026-actualites-et-donnees-cles"}
    ]},
-  {id:6,theme:"Culture",priority:7,
+  {id:6,themes:["Culture"],priority:7,
    title:"Affaire Patrick Bruel : placement en garde à vue",
    brief:"Dans le cadre de plaintes pour violences sexuelles.",
    summary:"Patrick Bruel a été placé en garde à vue dans le cadre de plaintes pour violences sexuelles déposées contre lui. L'affaire fait l'objet d'un suivi judiciaire, avec mise en examen et contrôle judiciaire évoqués.",
@@ -441,7 +457,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"franceinfo",take:"Fait le point sur l'état de la procédure judiciaire.",url:"https://www.franceinfo.fr/replay-jt/france-2/20-heures/jt-de-20h-du-lundi-08-juin-2026_8015666.html"},
      {outlet:"Boursorama",take:"Reprend le fil d'actualité sur la garde à vue.",url:"https://www.boursorama.com/actualite-economique/"}
    ]},
-  {id:7,theme:"Tech & Sciences",priority:8,
+  {id:7,themes:["Tech & Sciences"],priority:8,
    title:"INSEE : la France pourrait perdre 3,2 millions d'habitants d'ici 2070",
    brief:"Une population plus âgée, et un pic à 69,8 millions attendu en 2037.",
    summary:"Selon les projections de l'INSEE publiées le 8 juin, la France compterait 65,9 millions d'habitants en 2070 si les tendances se prolongeaient, soit 3,2 millions de moins qu'en 2026. La population vieillirait nettement.",
@@ -450,7 +466,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"INSEE",take:"Source primaire : l'étude complète et ses chiffres détaillés.",url:"https://www.insee.fr/fr/statistiques/9004289"},
      {outlet:"Banque des Territoires",take:"Souligne les défis de dépendance et d'accueil des plus âgés.",url:"https://www.banquedesterritoires.fr/demographie-linsee-anticipe-une-france-moins-peuplee-et-plus-agee-en-2070"}
    ]},
-  {id:8,theme:"Monde",priority:9,
+  {id:8,themes:["Monde"],priority:9,
    title:"Gare de l'Est : trafic interrompu après une panne électrique",
    brief:"Une panne d'alimentation a stoppé tout le trafic au départ de Paris.",
    summary:"Une panne d'alimentation électrique générale a interrompu, à partir de 18h30, tout le trafic ferroviaire au départ de la gare de l'Est à Paris, a annoncé la SNCF, qui a évoqué une reprise au plus tôt en soirée.",
@@ -459,7 +475,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Boursorama (Reuters)",take:"Reprend la dépêche d'agence sur l'incident et ses horaires.",url:"https://www.boursorama.com/actualite-economique/"},
      {outlet:"Yahoo Actualités",take:"Replace l'incident dans le fil d'actualité du jour.",url:"https://fr.news.yahoo.com/sport/l-info-jour-20-juin-050007657.html"}
    ]},
-  {id:9,theme:"Sport",priority:10,
+  {id:9,themes:["Sport"],priority:10,
    title:"Coupe du monde 2026 : quatre matchs au programme ce samedi",
    brief:"Dixième jour du Mondial, avec la Tunisie face au Japon.",
    summary:"Ce samedi 20 juin marque le dixième jour de la Coupe du monde de football 2026, organisée aux États-Unis, au Canada et au Mexique. Quatre matchs sont au programme, dont la deuxième sortie de la Tunisie face au Japon. La France, elle, occupe la deuxième place de son groupe.",
@@ -468,7 +484,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Olympics.com",take:"Donne le programme complet et les horaires des matchs du jour.",url:"https://www.olympics.com/fr/infos/coupe-du-monde-2026-samedi-20-juin-programme-resultat-aujourdhui-nuit-direct-mondial-football"},
      {outlet:"FFF",take:"Source officielle : classements groupe par groupe et calendrier des Bleus.",url:"https://www.fff.fr/article/16957-tout-sur-la-coupe-du-monde-fifa-2026.html"}
    ]},
-  {id:10,theme:"Environnement",priority:11,
+  {id:10,themes:["Environnement"],priority:11,
    title:"Canicule : 82 départements en vigilance ce samedi",
    brief:"Un nouvel épisode caniculaire, plus sévère, culmine les 21 et 22 juin.",
    summary:"La France connaît un nouvel épisode de chaleur intense, le deuxième de l'année. Ce samedi 20 juin, 82 départements sont en vigilance, avec un pic attendu les 21 et 22 juin où les températures dépasseraient largement 40 °C dans de nombreuses régions.",
@@ -477,7 +493,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Météo-France",take:"Source primaire : intensité de l'épisode et comparaison historique.",url:"https://meteofrance.com/actualites-et-dossiers/actualites/canicule-une-vague-de-chaleur-sinstalle-cette-semaine"},
      {outlet:"franceinfo",take:"Détaille la carte des vigilances département par département.",url:"https://www.franceinfo.fr/environnement/meteo/bulletins-meteo/previsions-quotidiennes/meteo-du-20-juin-2026-alertes-canicule-en-cours-sur-le-territoire-francais_8071121.html"}
    ]},
-  {id:11,theme:"Santé",priority:12,
+  {id:11,themes:["Santé","Tech & Sciences"],priority:12,
    title:"Canicule : Santé publique France appelle à la vigilance",
    brief:"Les fortes chaleurs font peser un risque sanitaire sur la population.",
    summary:"Face à l'épisode caniculaire, Santé publique France suit la situation sanitaire et rappelle les risques liés aux fortes chaleurs. Lors du précédent épisode de fin mai, déjà inédit, 26 % de la population avait été concernée par au moins un jour de vigilance orange.",
@@ -552,14 +568,15 @@ function runSearch(){
 
 /* ---------- selection logic ---------- */
 function articleMatches(a){
-  if(selected.has(a.theme))return true;
-  const hay=(a.title+' '+a.summary+' '+a.full+' '+a.theme).toLowerCase();
+  // La brève apparaît si AU MOINS un de ses tags est sélectionné.
+  for(const t of themesOf(a)){if(selected.has(t))return true;}
+  const hay=(a.title+' '+a.summary+' '+a.full+' '+themesOf(a).join(' ')).toLowerCase();
   for(const t of CUSTOM){if(selected.has(t)&&hay.includes(t.toLowerCase()))return true}
   return false;
 }
 function searchMatches(a){
   const q=searchQuery.toLowerCase();
-  const hay=(a.title+' '+a.brief+' '+a.summary+' '+a.full+' '+a.theme+' '+
+  const hay=(a.title+' '+a.brief+' '+a.summary+' '+a.full+' '+themesOf(a).join(' ')+' '+
     a.angles.map(g=>g.outlet+' '+g.take).join(' ')).toLowerCase();
   return hay.includes(q);
 }
@@ -575,11 +592,10 @@ function pickArticles(){
 }
 /* ---------- revue list ---------- */
 function entryRow(a,i){
-  const c=cat(a.theme);
   return '<div class="entry" data-open="'+a.id+'">'+
     '<div class="e-num">'+pad(i+1)+'</div>'+
     '<div class="e-body">'+
-      '<span class="e-cat" style="color:'+c+'">'+a.theme+'</span>'+
+      '<span class="e-cats">'+themeTags(a)+'</span>'+
       '<div class="e-title">'+a.title+'</div>'+
       '<div class="e-brief">'+a.brief+'</div>'+
     '</div>'+
@@ -671,12 +687,12 @@ function openSaved(key){
   if(a)renderDetail(a);
 }
 function renderDetail(a){
-  const saved_=isSaved(a);const c=cat(a.theme);
+  const saved_=isSaved(a);
   const k=breveKey(a);
   const angles=a.angles||[];
   const d=document.getElementById('detail');
   d.innerHTML=
-    '<span class="a-cat" style="color:'+c+'">'+a.theme+'</span>'+
+    '<span class="a-cats">'+themesOf(a).map(t=>'<span class="a-cat" style="color:'+cat(t)+'">'+t+'</span>').join('')+'</span>'+
     '<h1 class="a-title">'+a.title+'</h1>'+
     '<div class="a-meta"><span class="m-left">'+angles.length+' sources croisées</span>'+
       '<button class="save-btn'+(saved_?' on':'')+'" data-savekey="'+encodeURIComponent(k)+'">'+svg(saved_?ICONS.bookmarkOn:ICONS.bookmark)+(saved_?'Enregistrée':'Enregistrer')+'</button>'+
@@ -711,12 +727,11 @@ function renderSaved(){
   if(list.length===0){wrap.innerHTML='';empty.style.display='block';return}
   empty.style.display='none';
   wrap.innerHTML=list.map((a,i)=>{
-    const c=cat(a.theme);
     const k=breveKey(a);
     return '<div class="entry" data-opensaved="'+encodeURIComponent(k)+'">'+
       '<div class="e-num">'+pad(i+1)+'</div>'+
       '<div class="e-body">'+
-        '<span class="e-cat" style="color:'+c+'">'+a.theme+'</span>'+
+        '<span class="e-cats">'+themeTags(a)+'</span>'+
         '<div class="e-title">'+a.title+'</div>'+
         '<div class="e-brief">'+a.brief+'</div>'+
         '<div class="e-savedat">'+fmtSavedDate(a.savedAt)+'</div>'+
