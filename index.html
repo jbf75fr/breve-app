@@ -304,17 +304,17 @@
 </main>
 
 <script>
-const THEMES=["Politique","Économie","International","Technologie","Sciences","Culture","Sport","Climat","Santé","Insolite"];
+const THEMES=["France","Monde","Économie","Tech & Sciences","Culture","Sport","Santé","Environnement","Société","Insolite"];
 const CUSTOM=[];
-const selected=new Set(["Politique","International","Technologie","Économie","Culture","Sciences","Sport","Climat","Santé"]);
+const selected=new Set(["France","Monde","Économie","Tech & Sciences","Culture","Sport","Santé","Environnement","Société"]);
 let chosenCount=10;
 let searchQuery="";
 
 /* couleurs d'accent par thème (sobres, encrées) */
 const CATCOLOR={
-  International:"#7C2B2B", Technologie:"#3C4A33", "Économie":"#B5762A",
-  Politique:"#5E1E1E", Sciences:"#4A5A6B", Culture:"#8A3A5E",
-  Sport:"#2E5E55", "Santé":"#9C4A2E", Climat:"#4A6B3C", Insolite:"#7A5A8E"
+  France:"#5E1E1E", Monde:"#7C2B2B", "Économie":"#B5762A",
+  "Tech & Sciences":"#3C4A33", Culture:"#8A3A5E", Sport:"#2E5E55",
+  "Santé":"#9C4A2E", Environnement:"#4A6B3C", "Société":"#4A5A6B", Insolite:"#7A5A8E"
 };
 function cat(t){return CATCOLOR[t]||"#5A4B3C"}
 
@@ -328,7 +328,7 @@ function updateBadge(){const b=document.getElementById('saved-badge');if(saved.s
 
 // Données de secours, figées : utilisées si le chargement de la revue du jour échoue.
 const FALLBACK_ARTICLES=[
-  {id:0,theme:"International",priority:1,
+  {id:0,theme:"Monde",priority:1,
    title:"Accord États-Unis–Iran : le texte de paix dévoilé",
    brief:"Après quatre mois de guerre, un protocole en 14 points est rendu public.",
    summary:"Les États-Unis et l'Iran sont parvenus à un accord de paix le 14 juin, rendu public le 17. Téhéran s'engage à diluer ses stocks d'uranium enrichi en échange d'une levée des sanctions, dans le cadre de négociations à mener sous 60 jours.",
@@ -337,7 +337,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"CNews",take:"Détaille les 14 points du protocole et le calendrier de signature.",url:"https://www.cnews.fr/monde/2026-06-14/guerre-au-moyen-orient-ce-que-lon-sait-de-laccord-qui-doit-etre-signe-ce-dimanche"},
      {outlet:"Banque de France",take:"Évalue l'impact du conflit et de l'accord sur les projections économiques.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"}
    ]},
-  {id:1,theme:"Technologie",priority:2,
+  {id:1,theme:"Tech & Sciences",priority:2,
    title:"Deezer lance un détecteur de musique générée par IA",
    brief:"Un outil gratuit scanne les playlists de 20 plateformes de streaming.",
    summary:"La plateforme française Deezer a lancé le 11 juin un détecteur en ligne gratuit, qui révèle la proportion de titres entièrement générés par IA dans une playlist, y compris sur Spotify, Apple Music ou YouTube Music.",
@@ -365,7 +365,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Banque de France",take:"Source primaire : les projections et leurs hypothèses.",url:"https://www.banque-france.fr/fr/actualites/projections-macroeconomiques-juin-2026"},
      {outlet:"Boursorama",take:"Relie les projections au contexte économique et de marché.",url:"https://www.boursorama.com/actualite-economique/"}
    ]},
-  {id:4,theme:"Politique",priority:5,
+  {id:4,theme:"France",priority:5,
    title:"Loi IA et culture : le texte bloqué à l'Assemblée",
    brief:"Voté à l'unanimité au Sénat, freiné par une centaine d'amendements.",
    summary:"Le 11 juin, la proposition de loi instaurant une « présomption d'utilisation » des contenus culturels par les fournisseurs d'IA, adoptée à l'unanimité au Sénat, a été bloquée à l'Assemblée par une avalanche d'amendements de dernière minute.",
@@ -374,7 +374,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Eklecty-City",take:"Détaille le mécanisme du texte et la manœuvre d'obstruction.",url:"https://www.eklecty-city.fr/cinema/loi-ia-assemblee-nationale-lobbying-tech-doublage/"},
      {outlet:"Sénat",take:"Source primaire : le dossier législatif et le parcours du texte.",url:"https://www.senat.fr/dossier-legislatif/ppl25-220.html"}
    ]},
-  {id:5,theme:"Technologie",priority:6,
+  {id:5,theme:"Tech & Sciences",priority:6,
    title:"L'IA dans les services publics au cœur d'un événement à Bercy",
    brief:"Organisé à la veille de VivaTech par le ministre des Comptes publics.",
    summary:"À la veille du salon VivaTech, le ministre de l'Action et des Comptes publics a organisé à Bercy un événement consacré au déploiement de l'intelligence artificielle dans les services publics, réunissant agents publics et acteurs du numérique français.",
@@ -392,7 +392,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"franceinfo",take:"Fait le point sur l'état de la procédure judiciaire.",url:"https://www.franceinfo.fr/replay-jt/france-2/20-heures/jt-de-20h-du-lundi-08-juin-2026_8015666.html"},
      {outlet:"Boursorama",take:"Reprend le fil d'actualité sur la garde à vue.",url:"https://www.boursorama.com/actualite-economique/"}
    ]},
-  {id:7,theme:"Sciences",priority:8,
+  {id:7,theme:"Tech & Sciences",priority:8,
    title:"INSEE : la France pourrait perdre 3,2 millions d'habitants d'ici 2070",
    brief:"Une population plus âgée, et un pic à 69,8 millions attendu en 2037.",
    summary:"Selon les projections de l'INSEE publiées le 8 juin, la France compterait 65,9 millions d'habitants en 2070 si les tendances se prolongeaient, soit 3,2 millions de moins qu'en 2026. La population vieillirait nettement.",
@@ -401,7 +401,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"INSEE",take:"Source primaire : l'étude complète et ses chiffres détaillés.",url:"https://www.insee.fr/fr/statistiques/9004289"},
      {outlet:"Banque des Territoires",take:"Souligne les défis de dépendance et d'accueil des plus âgés.",url:"https://www.banquedesterritoires.fr/demographie-linsee-anticipe-une-france-moins-peuplee-et-plus-agee-en-2070"}
    ]},
-  {id:8,theme:"International",priority:9,
+  {id:8,theme:"Monde",priority:9,
    title:"Gare de l'Est : trafic interrompu après une panne électrique",
    brief:"Une panne d'alimentation a stoppé tout le trafic au départ de Paris.",
    summary:"Une panne d'alimentation électrique générale a interrompu, à partir de 18h30, tout le trafic ferroviaire au départ de la gare de l'Est à Paris, a annoncé la SNCF, qui a évoqué une reprise au plus tôt en soirée.",
@@ -419,7 +419,7 @@ const FALLBACK_ARTICLES=[
      {outlet:"Olympics.com",take:"Donne le programme complet et les horaires des matchs du jour.",url:"https://www.olympics.com/fr/infos/coupe-du-monde-2026-samedi-20-juin-programme-resultat-aujourdhui-nuit-direct-mondial-football"},
      {outlet:"FFF",take:"Source officielle : classements groupe par groupe et calendrier des Bleus.",url:"https://www.fff.fr/article/16957-tout-sur-la-coupe-du-monde-fifa-2026.html"}
    ]},
-  {id:10,theme:"Climat",priority:11,
+  {id:10,theme:"Environnement",priority:11,
    title:"Canicule : 82 départements en vigilance ce samedi",
    brief:"Un nouvel épisode caniculaire, plus sévère, culmine les 21 et 22 juin.",
    summary:"La France connaît un nouvel épisode de chaleur intense, le deuxième de l'année. Ce samedi 20 juin, 82 départements sont en vigilance, avec un pic attendu les 21 et 22 juin où les températures dépasseraient largement 40 °C dans de nombreuses régions.",

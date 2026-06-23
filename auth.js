@@ -286,7 +286,7 @@ async function startSession(user, isFreshLogin) {
     // Première connexion : on présente d'abord le concept (carrousel de
     // bienvenue), qui enchaîne ensuite sur le choix des thèmes.
     window.selected.clear();
-    ["Politique", "International", "Culture"].forEach((t) => window.selected.add(t));
+    ["France", "Monde", "Culture"].forEach((t) => window.selected.add(t));
     showOverlay("welcome");
   }
 }
