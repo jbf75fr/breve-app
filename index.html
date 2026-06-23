@@ -267,9 +267,9 @@
         <div class="contact">
           <span class="contact-label">Une question, une suggestion ?</span>
           <div class="contact-links">
-            <a class="contact-link" href="mailto:contact.breve@proton.me" aria-label="Nous écrire par e-mail" title="contact.breve@proton.me">
+            <a class="contact-link" href="mailto:contact.breve@proton.me" aria-label="Nous écrire par e-mail" title="Nous écrire par e-mail">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-              <span>contact.breve@proton.me</span>
+              <span>Nous écrire</span>
             </a>
             <a class="contact-link" href="https://instagram.com/breve.app" rel="noopener noreferrer" aria-label="Nous suivre sur Instagram" title="@breve.app">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
@@ -592,6 +592,14 @@ function renderBrief(){
     wrap.innerHTML='';
     if(emptyTitle)emptyTitle.textContent='Aucune brève à afficher';
     if(emptySub)emptySub.textContent='Sélectionnez un ou plusieurs thème(s).';
+    empty.style.display='block';end.style.display='none';return;
+  }
+  // Des thèmes sont sélectionnés, mais rien ne correspond aujourd'hui.
+  if(list.length===0){
+    meta.textContent='aucune brève aujourd\u2019hui';
+    wrap.innerHTML='';
+    if(emptyTitle)emptyTitle.textContent='Aucune brève pour aujourd\u2019hui';
+    if(emptySub)emptySub.textContent=(n>1?'Aucune actualité dans ces thématiques pour le moment.':'Aucune actualité dans cette thématique pour le moment.');
     empty.style.display='block';end.style.display='none';return;
   }
   empty.style.display='none';end.style.display='block';
