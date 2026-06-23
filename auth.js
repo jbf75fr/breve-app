@@ -40,13 +40,6 @@ function buildOverlay() {
         Continuer avec Google
       </button>
       <p class="auth-status" id="auth-status"></p>
-
-      <div class="auth-sep"><span>ou</span></div>
-
-      <div class="auth-beta">
-        <p class="auth-beta-intro">Pas encore d'accès ?</p>
-        <button class="auth-beta-btn" id="auth-beta-open">S'inscrire à la beta</button>
-      </div>
     </div>
 
     <div class="auth-screen" id="auth-denied" style="display:none">
@@ -91,10 +84,6 @@ function buildOverlay() {
   document.getElementById("auth-google").addEventListener("click", signIn);
   document.getElementById("auth-ob-done").addEventListener("click", finishOnboarding);
 
-  document.getElementById("auth-beta-open").addEventListener("click", () => {
-    document.getElementById("auth-beta-panel").style.display = "block";
-    loadTally();
-  });
   document.getElementById("auth-beta-close").addEventListener("click", () => {
     document.getElementById("auth-beta-panel").style.display = "none";
   });
