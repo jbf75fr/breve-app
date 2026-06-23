@@ -1,5 +1,5 @@
 /*
-  auth.js — Connexion Google + synchronisation des préférences (Supabase).
+  auth.js : Connexion Google + synchronisation des préférences (Supabase).
 
   Rôle :
    - bloquer l'entrée dans l'app tant que l'utilisateur n'est pas connecté ;

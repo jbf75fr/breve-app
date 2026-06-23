@@ -1,5 +1,5 @@
 /*
-  service-worker.js — le script d'arrière-plan de la PWA Brève.
+  service-worker.js : le script d'arrière-plan de la PWA Brève.
 
   Deux rôles :
    1. Mettre en cache l'app pour qu'elle s'ouvre vite et même hors-ligne.
