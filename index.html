@@ -81,6 +81,25 @@
   .sk{position:relative;overflow:hidden;background:#ECEAE4;border-radius:6px}
   .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,#F6F4EF,transparent);animation:sk-sweep 1.5s ease-in-out infinite}
   @keyframes sk-sweep{100%{transform:translateX(100%)}}
+  /* Apparition en cascade des brèves : fondu doux + léger glissement. */
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .list .entry{animation:cardIn .42s cubic-bezier(.22,.61,.36,1) both}
+  .list .entry:nth-child(1){animation-delay:.02s}
+  .list .entry:nth-child(2){animation-delay:.06s}
+  .list .entry:nth-child(3){animation-delay:.10s}
+  .list .entry:nth-child(4){animation-delay:.14s}
+  .list .entry:nth-child(5){animation-delay:.18s}
+  .list .entry:nth-child(6){animation-delay:.22s}
+  .list .entry:nth-child(7){animation-delay:.26s}
+  .list .entry:nth-child(8){animation-delay:.30s}
+  .list .entry:nth-child(n+9){animation-delay:.34s}
+  /* Retour tactile : léger enfoncement au clic (cartes, pastilles, boutons). */
+  .entry:active{transform:scale(.992)}
+  .chip:active,.save-btn:active,.seg button:active,.auth-chip:active{transform:scale(.95)}
+  /* Respect du réglage système « réduire les animations » (accessibilité). */
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important}
+  }
   .sk-cat{height:10px;width:84px;margin-bottom:12px;border-radius:5px}
   .sk-title{height:17px;width:92%;margin-bottom:9px;border-radius:5px}
   .sk-title.short{width:64%}
@@ -133,6 +152,8 @@
   .save-btn{font-family:inherit;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;cursor:pointer;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink-soft);transition:.13s}
   .save-btn:hover{border-color:var(--accent);color:var(--accent)}
   .save-btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+  @keyframes savePop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+  .save-btn.on svg{animation:savePop .34s ease}
   .a-lead{font-size:16.5px;color:var(--ink);line-height:1.72;margin-bottom:22px}
   .a-body{font-size:16.5px;color:var(--ink);line-height:1.72;margin-bottom:34px}
 
