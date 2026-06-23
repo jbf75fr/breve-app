@@ -200,6 +200,11 @@
   #auth-login .auth-logo{animation:logoRise 1s cubic-bezier(.22,.61,.36,1) both}
   #auth-login .auth-title{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.32s}
   #auth-login .auth-tagline{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.5s}
+  /* Curseur « machine à écrire » de la tagline. */
+  .tw-caret{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;vertical-align:-2px;animation:twBlink .9s step-end infinite}
+  .tw-caret.done{animation:twFade .5s ease forwards}
+  @keyframes twBlink{0%,100%{opacity:1}50%{opacity:0}}
+  @keyframes twFade{to{opacity:0}}
   #auth-login .auth-gbtn{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.68s}
   #auth-login .auth-status{animation:rise .7s ease both;animation-delay:.8s}
   .auth-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:38px;margin-bottom:24px}
