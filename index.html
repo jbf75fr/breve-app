@@ -53,6 +53,14 @@
   /* list as cards */
   .list{display:grid;gap:16px;grid-template-columns:repeat(2,1fr)}
   @media(max-width:760px){.list{grid-template-columns:1fr}}
+  /* Header sur mobile : marque sur une ligne, onglets (et déconnexion) en dessous */
+  @media(max-width:640px){
+    .top-in{flex-wrap:wrap;gap:12px;padding:14px 18px}
+    .brand{flex:1 1 auto}
+    .nav{flex:1 1 100%;width:100%;justify-content:flex-start;gap:8px;align-items:center}
+    .nav #logout-btn{margin-left:auto}
+    .nav button{padding:8px 14px;white-space:nowrap}
+  }
   .entry{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;cursor:pointer;transition:.18s;display:flex;gap:14px;align-items:flex-start}
   .entry:hover{border-color:var(--line-strong);transform:translateY(-2px)}
   .e-num{display:none}
