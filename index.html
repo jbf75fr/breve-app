@@ -60,6 +60,20 @@
   .e-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:6px;display:inline-block}
   .e-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
   .e-brief{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  /* ----- Skeleton de chargement ----- */
+  .sk{position:relative;overflow:hidden;background:#ECEAE4;border-radius:6px}
+  .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,#F6F4EF,transparent);animation:sk-sweep 1.5s ease-in-out infinite}
+  @keyframes sk-sweep{100%{transform:translateX(100%)}}
+  .sk-cat{height:10px;width:84px;margin-bottom:12px;border-radius:5px}
+  .sk-title{height:17px;width:92%;margin-bottom:9px;border-radius:5px}
+  .sk-title.short{width:64%}
+  .sk-line{height:12px;width:100%;margin-bottom:7px;border-radius:5px;background:#ECEAE4;opacity:.7}
+  .sk-line.last{width:46%}
+  .sk-aside{width:22px;height:22px;border-radius:6px;flex:0 0 auto}
+  .entry:nth-child(2) .sk::after{animation-delay:.15s}
+  .entry:nth-child(3) .sk::after{animation-delay:.3s}
+  .entry:nth-child(4) .sk::after{animation-delay:.45s}
+  .entry:nth-child(5) .sk::after{animation-delay:.6s}
   .e-aside{font-size:11px;color:var(--ink-faint);text-align:right;white-space:nowrap;padding-top:2px}
   .e-aside .src-n{display:block;font-size:16px;font-weight:600;color:var(--ink-soft);font-family:'Fraunces',serif}
 
@@ -380,6 +394,9 @@ const FALLBACK_ARTICLES=[
 // ARTICLES démarre sur les données de secours, puis sera remplacé par la revue
 // du jour si son chargement réussit (voir loadLiveBreves plus bas).
 let ARTICLES = FALLBACK_ARTICLES;
+// Vrai tant que la revue du jour n'a pas fini de charger : on affiche alors le
+// skeleton plutôt que les données de secours, pour éviter un "flash" de contenu.
+let loadingLive = true;
 
 // Adresse de la revue générée chaque matin par le backend (dépôt breve-backend).
 const LIVE_URL = "https://raw.githubusercontent.com/jbf75fr/breve-backend/main/public/breves.json";
@@ -469,7 +486,34 @@ function entryRow(a,i){
     '</div>'+
   '</div>';
 }
+/* ---------- skeleton de chargement ---------- */
+function skeletonCard(short){
+  return '<div class="entry">'+
+    '<div class="e-body">'+
+      '<div class="sk sk-cat"></div>'+
+      '<div class="sk sk-title'+(short?' short':'')+'"></div>'+
+      '<div class="sk-line"></div>'+
+      '<div class="sk-line last"></div>'+
+    '</div>'+
+    '<div class="sk sk-aside"></div>'+
+  '</div>';
+}
+function renderSkeleton(){
+  const meta=document.getElementById('strip-meta');
+  const empty=document.getElementById('brief-empty');
+  const end=document.getElementById('brief-end');
+  const wrap=document.getElementById('list');
+  if(meta)meta.textContent='Préparation de votre revue…';
+  if(empty)empty.style.display='none';
+  if(end)end.style.display='none';
+  let html='';
+  for(let i=0;i<5;i++)html+=skeletonCard(i%2===1);
+  if(wrap)wrap.innerHTML=html;
+}
+
 function renderBrief(){
+  // Pendant le chargement de la revue du jour, on montre le skeleton.
+  if(loadingLive){renderSkeleton();return;}
   const list=pickArticles();
   const n=selected.size;
   const meta=document.getElementById('strip-meta');
@@ -615,10 +659,18 @@ async function loadLiveBreves(){
         setRevueTitle();
       }
       // ré-affiche tout avec les vraies données
+      loadingLive=false;
       renderThemes();renderBrief();renderSaved();
     }
   }catch(e){
     console.warn("Revue du jour indisponible, données de secours utilisées.", e);
+  }finally{
+    // Dans tous les cas, on arrête le skeleton : succès → vraies brèves,
+    // échec → données de secours. L'app n'est jamais bloquée sur le skeleton.
+    if(loadingLive){
+      loadingLive=false;
+      renderThemes();renderBrief();renderSaved();
+    }
   }
 }
 
@@ -660,6 +712,15 @@ window.breveUpdateAccount();
 
 renderThemes();renderBrief();updateBadge();renderSaved();
 loadLiveBreves();
+
+// Filet de sécurité : si le réseau traîne, on ne reste pas bloqué sur le
+// skeleton au-delà de 6 secondes (on bascule sur les données de secours).
+setTimeout(function(){
+  if(loadingLive){
+    loadingLive=false;
+    renderThemes();renderBrief();renderSaved();
+  }
+},6000);
 </script>
 <script type="module" src="auth.js"></script>
 
