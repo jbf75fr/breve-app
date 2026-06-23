@@ -44,7 +44,12 @@
   .revue-date{color:var(--accent);white-space:nowrap}
   .themebar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 16px;padding-bottom:2px}
   .themebar #themechips{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  @media(max-width:640px){.themebar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:14px}.themebar #themechips{flex-wrap:nowrap}.themebar::-webkit-scrollbar{display:none}.themebar .chip{flex:0 0 auto}}
+  @media(max-width:640px){.themebar{flex-wrap:wrap;margin-bottom:14px;gap:7px}.themebar #themechips{flex-wrap:wrap;gap:7px}.themebar .chip{flex:0 0 auto}
+    .chip{font-size:13px;padding:6px 12px}
+    .searchchip{padding:6px 11px}
+    .searchchip input{width:60px}
+    .searchchip:focus-within input{width:120px}
+  }
   .controls-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:5px}
   .seg button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:9px 18px;border-radius:7px;cursor:pointer;transition:.15s}
