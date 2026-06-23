@@ -45,8 +45,8 @@ function buildOverlay() {
     <div class="auth-screen" id="auth-denied" style="display:none">
       <div class="auth-logo">B</div>
       <h2 class="auth-hi">Accès sur invitation</h2>
-      <p class="auth-sub">Brève est en accès limité pour le moment. Votre adresse ne figure pas encore parmi les comptes autorisés. Inscrivez-vous à la beta : nous vous préviendrons dès que votre accès sera ouvert.</p>
-      <button class="auth-cta" id="auth-denied-beta">S'inscrire à la beta</button>
+      <p class="auth-sub">Brève est en accès limité pour le moment. Votre adresse ne figure pas encore parmi les comptes autorisés. Demandez votre invitation : nous vous préviendrons dès que votre accès sera ouvert.</p>
+      <button class="auth-cta" id="auth-denied-beta">Obtenir une invitation</button>
       <button class="auth-skip" id="auth-denied-back">Revenir à la connexion</button>
     </div>
 
@@ -76,7 +76,7 @@ function buildOverlay() {
       </button>
       <iframe id="auth-beta-frame" data-tally-src="https://tally.so/r/ODrbyk?transparentBackground=1"
               width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0"
-              title="S'inscrire à la beta"></iframe>
+              title="Obtenir une invitation"></iframe>
     </div>
   `;
   document.body.appendChild(o);
