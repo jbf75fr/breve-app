@@ -187,6 +187,21 @@
   #auth-login{padding:32px 0}
   .auth-screen{display:flex;flex-direction:column;align-items:center;max-width:380px;width:100%;animation:authfade .35s ease}
   @keyframes authfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  /* --- Entrée « lever de jour » de l'écran de connexion --- */
+  /* Le conteneur login ne fait pas le fondu global : ses éléments montent un à un. */
+  #auth-login{animation:none}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  /* Le logo se « lève » : montée douce + très léger agrandissement + halo qui s'installe. */
+  @keyframes logoRise{
+    0%{opacity:0;transform:translateY(22px) scale(.94);box-shadow:0 0 0 rgba(47,93,80,0)}
+    60%{opacity:1}
+    100%{opacity:1;transform:none;box-shadow:0 10px 30px rgba(47,93,80,.16)}
+  }
+  #auth-login .auth-logo{animation:logoRise 1s cubic-bezier(.22,.61,.36,1) both}
+  #auth-login .auth-title{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.32s}
+  #auth-login .auth-tagline{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.5s}
+  #auth-login .auth-gbtn{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.68s}
+  #auth-login .auth-status{animation:rise .7s ease both;animation-delay:.8s}
   .auth-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:38px;margin-bottom:24px}
   .auth-title{font-family:'Fraunces',serif;font-size:40px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}
   .auth-tagline{font-size:16px;color:var(--ink-soft);line-height:1.5;margin-bottom:40px}
