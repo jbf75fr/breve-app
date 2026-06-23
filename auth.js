@@ -259,7 +259,9 @@ async function savePreferences() {
   const payload = {
     user_id: currentUser.id,
     themes: [...window.selected],
-    saved: [...window.saved],
+    // window.saved est une Map (clé stable -> contenu de la brève + savedAt).
+    // On stocke le tableau de ses valeurs (les brèves complètes).
+    saved: [...window.saved.values()],
     updated_at: new Date().toISOString(),
   };
   try {
@@ -324,8 +326,9 @@ async function startSession(user, isFreshLogin) {
     // Utilisateur connu : on applique ses préférences enregistrées
     window.selected.clear();
     (prefs.themes.length ? prefs.themes : window.THEMES).forEach((t) => window.selected.add(t));
-    window.saved.clear();
-    prefs.saved.forEach((id) => window.saved.add(id));
+    // prefs.saved est un tableau de brèves complètes : on reconstruit la Map
+    // côté app (qui connaît la logique de clé stable).
+    if (window.breveSetSaved) window.breveSetSaved(prefs.saved || []);
     window.breveRefresh();
     hideOverlay();
   } else {

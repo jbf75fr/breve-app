@@ -73,6 +73,7 @@
   .e-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;margin-bottom:6px;display:inline-block}
   .e-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
   .e-brief{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  .e-savedat{font-size:12px;color:var(--ink-faint);margin-top:8px;font-style:italic}
   /* ----- Skeleton de chargement ----- */
   .sk{position:relative;overflow:hidden;background:#ECEAE4;border-radius:6px}
   .sk::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,#F6F4EF,transparent);animation:sk-sweep 1.5s ease-in-out infinite}
@@ -317,12 +318,61 @@ const CATCOLOR={
 };
 function cat(t){return CATCOLOR[t]||"#5A4B3C"}
 
-const SAVE_KEY="breve.saved.v2";
+// Brèves enregistrées : on stocke le CONTENU COMPLET de la brève (pas juste son
+// numéro, qui change chaque jour) plus la date d'enregistrement. Ainsi une brève
+// enregistrée reste lisible même quand l'actualité du jour a changé.
+// Structure : Map< clé stable , { ...contenu, savedAt } >.
+// La clé stable est l'URL de la première source (à défaut, le titre).
+const SAVE_KEY="breve.saved.v3";
 let _mem=null;
-function loadSaved(){try{const r=localStorage.getItem(SAVE_KEY);return new Set(r?JSON.parse(r):[])}catch(e){_mem=_mem||[];return new Set(_mem)}}
-function persistSaved(){try{localStorage.setItem(SAVE_KEY,JSON.stringify([...saved]))}catch(e){_mem=[...saved]}}
+function breveKey(a){
+  if(a && a.angles && a.angles.length && a.angles[0].url) return a.angles[0].url;
+  return (a && a.title) ? "t:"+a.title : "";
+}
+function loadSaved(){
+  try{
+    const r=localStorage.getItem(SAVE_KEY);
+    const arr=r?JSON.parse(r):[];
+    return new Map(arr.map(o=>[breveKey(o),o]));
+  }catch(e){
+    _mem=_mem||[];
+    return new Map(_mem.map(o=>[breveKey(o),o]));
+  }
+}
+function persistSaved(){
+  const arr=[...saved.values()];
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(arr))}catch(e){_mem=arr}
+}
 const saved=loadSaved();
-function toggleSave(id){saved.has(id)?saved.delete(id):saved.add(id);persistSaved();updateBadge();renderSaved();if(window.brevePersist)window.brevePersist()}
+function isSaved(a){return saved.has(breveKey(a))}
+// Retrait/ajout par clé stable (depuis la vue détail ou la liste enregistrée).
+function toggleSaveByKey(key, contentForAdd){
+  if(saved.has(key)){
+    saved.delete(key);
+  }else if(contentForAdd){
+    const a=contentForAdd;
+    saved.set(key,{theme:a.theme,title:a.title,brief:a.brief,summary:a.summary,
+                   full:a.full,angles:a.angles,savedAt:new Date().toISOString()});
+  }
+  persistSaved();updateBadge();renderSaved();renderBrief();
+  if(window.brevePersist)window.brevePersist();
+}
+function toggleSave(id){
+  // id = identifiant du jour ; on retrouve la brève dans ARTICLES.
+  const a=ARTICLES.find(x=>x.id===id);
+  if(!a)return;
+  const k=breveKey(a);
+  if(saved.has(k)){
+    saved.delete(k);
+  }else{
+    // On copie le contenu et on horodate l'enregistrement.
+    const copy={theme:a.theme,title:a.title,brief:a.brief,summary:a.summary,
+                full:a.full,angles:a.angles,savedAt:new Date().toISOString()};
+    saved.set(k,copy);
+  }
+  persistSaved();updateBadge();renderSaved();renderBrief();
+  if(window.brevePersist)window.brevePersist();
+}
 function updateBadge(){const b=document.getElementById('saved-badge');if(saved.size>0){b.textContent=saved.size;b.style.display='inline-block'}else{b.style.display='none'}}
 
 // Données de secours, figées : utilisées si le chargement de la revue du jour échoue.
@@ -609,22 +659,34 @@ function renderBrief(){
 }
 
 /* ---------- detail ---------- */
+// Ouvre le détail d'une brève du jour (par son id).
 function openDetail(id){
   const a=ARTICLES.find(x=>x.id===id);
-  const isSaved=saved.has(id);const c=cat(a.theme);
+  if(a)renderDetail(a);
+}
+// Ouvre le détail d'une brève ENREGISTRÉE (depuis le contenu stocké), même si
+// l'actualité d'origine a disparu de la revue du jour.
+function openSaved(key){
+  const a=saved.get(key);
+  if(a)renderDetail(a);
+}
+function renderDetail(a){
+  const saved_=isSaved(a);const c=cat(a.theme);
+  const k=breveKey(a);
+  const angles=a.angles||[];
   const d=document.getElementById('detail');
   d.innerHTML=
     '<span class="a-cat" style="color:'+c+'">'+a.theme+'</span>'+
     '<h1 class="a-title">'+a.title+'</h1>'+
-    '<div class="a-meta"><span class="m-left">'+a.angles.length+' sources croisées</span>'+
-      '<button class="save-btn'+(isSaved?' on':'')+'" data-save="'+id+'">'+svg(isSaved?ICONS.bookmarkOn:ICONS.bookmark)+(isSaved?'Enregistrée':'Enregistrer')+'</button>'+
+    '<div class="a-meta"><span class="m-left">'+angles.length+' sources croisées</span>'+
+      '<button class="save-btn'+(saved_?' on':'')+'" data-savekey="'+encodeURIComponent(k)+'">'+svg(saved_?ICONS.bookmarkOn:ICONS.bookmark)+(saved_?'Enregistrée':'Enregistrer')+'</button>'+
     '</div>'+
     '<p class="a-lead">'+a.summary+'</p>'+
     '<div class="a-body">'+a.full+'</div>'+
     '<p class="ai-note">Contenu synthétisé par une intelligence artificielle à partir des sources ci-dessous.</p>'+
     '<div class="sources-h disp">Sources</div>'+
     '<div class="sources-rule"></div>'+
-    a.angles.map(g=>
+    angles.map(g=>
       '<a class="source" href="'+g.url+'" rel="noopener noreferrer">'+
         '<div><div class="s-name"><span class="tick"></span>'+g.outlet+'</div><div class="s-take">'+g.take+'</div></div>'+
         '<span class="s-read">Lire '+svg(ICONS.ext)+'</span>'+
@@ -634,22 +696,32 @@ function openDetail(id){
 }
 
 /* ---------- saved ---------- */
+function fmtSavedDate(iso){
+  if(!iso)return"";
+  const M=["janvier","février","mars","avril","mai","juin","juillet","août",
+           "septembre","octobre","novembre","décembre"];
+  const d=new Date(iso);
+  if(isNaN(d))return"";
+  return "Enregistrée le "+d.getDate()+" "+M[d.getMonth()];
+}
 function renderSaved(){
   const wrap=document.getElementById('saved-list');
   const empty=document.getElementById('saved-empty');
-  const list=ARTICLES.filter(a=>saved.has(a.id));
+  const list=[...saved.values()].sort((a,b)=>(b.savedAt||"").localeCompare(a.savedAt||""));
   if(list.length===0){wrap.innerHTML='';empty.style.display='block';return}
   empty.style.display='none';
   wrap.innerHTML=list.map((a,i)=>{
     const c=cat(a.theme);
-    return '<div class="entry" data-open="'+a.id+'">'+
+    const k=breveKey(a);
+    return '<div class="entry" data-opensaved="'+encodeURIComponent(k)+'">'+
       '<div class="e-num">'+pad(i+1)+'</div>'+
       '<div class="e-body">'+
         '<span class="e-cat" style="color:'+c+'">'+a.theme+'</span>'+
         '<div class="e-title">'+a.title+'</div>'+
         '<div class="e-brief">'+a.brief+'</div>'+
+        '<div class="e-savedat">'+fmtSavedDate(a.savedAt)+'</div>'+
       '</div>'+
-      '<div class="e-aside"><button class="modal-close" data-unsave="'+a.id+'" title="Retirer" style="color:var(--ink-faint)">'+svg(ICONS.trash)+'</button></div>'+
+      '<div class="e-aside"><button class="modal-close" data-unsavekey="'+encodeURIComponent(k)+'" title="Retirer" style="color:var(--ink-faint)">'+svg(ICONS.trash)+'</button></div>'+
     '</div>';
   }).join('');
 }
@@ -671,10 +743,26 @@ document.addEventListener('click',function(e){
   if(rm){e.stopPropagation();const t=rm.dataset.remove;const i=CUSTOM.indexOf(t);if(i>-1)CUSTOM.splice(i,1);selected.delete(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
   const chip=e.target.closest('[data-theme]');
   if(chip){const t=chip.dataset.theme;selected.has(t)?selected.delete(t):selected.add(t);renderThemes();renderBrief();if(window.brevePersist)window.brevePersist();return}
-  const save=e.target.closest('[data-save]');
-  if(save){e.stopPropagation();const id=+save.dataset.save;toggleSave(id);openDetail(id);return}
-  const unsave=e.target.closest('[data-unsave]');
-  if(unsave){e.stopPropagation();toggleSave(+unsave.dataset.unsave);return}
+  // Bouton enregistrer/retirer dans la vue détail (par clé stable).
+  const savek=e.target.closest('[data-savekey]');
+  if(savek){
+    e.stopPropagation();
+    const key=decodeURIComponent(savek.dataset.savekey);
+    // Pour ajouter, on a besoin du contenu : il est dans ARTICLES (brève du jour)
+    // ou déjà dans saved (brève enregistrée rouverte).
+    let content=ARTICLES.find(x=>breveKey(x)===key)||saved.get(key);
+    toggleSaveByKey(key,content);
+    // On rafraîchit la vue détail pour refléter l'état du bouton.
+    if(content)renderDetail(saved.get(key)||content);
+    return;
+  }
+  // Retrait depuis la liste des brèves enregistrées (par clé stable).
+  const unsavek=e.target.closest('[data-unsavekey]');
+  if(unsavek){e.stopPropagation();toggleSaveByKey(decodeURIComponent(unsavek.dataset.unsavekey));return}
+  // Ouvre une brève enregistrée (depuis son contenu stocké).
+  const opensaved=e.target.closest('[data-opensaved]');
+  if(opensaved){openSaved(decodeURIComponent(opensaved.dataset.opensaved));return}
+  // Ouvre une brève du jour.
   const card=e.target.closest('[data-open]');
   if(card){openDetail(+card.dataset.open);return}
 });
@@ -737,6 +825,17 @@ window.CATCOLOR=CATCOLOR;
 window.cat=cat;
 window.selected=selected;
 window.saved=saved;
+// Reconstruit la Map des brèves enregistrées depuis un tableau (venant de
+// Supabase). Tolère l'ancien format (tableau d'ids) en l'ignorant proprement.
+window.breveSetSaved=function(arr){
+  saved.clear();
+  (arr||[]).forEach(o=>{
+    if(o&&typeof o==='object'&&o.title){ // nouveau format : brève complète
+      saved.set(breveKey(o),o);
+    }
+  });
+  updateBadge();renderSaved();
+};
 // Ré-affiche toute l'app (après chargement des préférences depuis Supabase).
 window.breveRefresh=function(){renderThemes();renderBrief();updateBadge();renderSaved()};
 
