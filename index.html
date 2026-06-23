@@ -64,6 +64,8 @@
   .e-aside .src-n{display:block;font-size:16px;font-weight:600;color:var(--ink-soft);font-family:'Fraunces',serif}
 
   .endplate{text-align:center;padding:42px 0 6px;color:var(--ink-faint);font-size:14px;border-top:1px solid var(--line);margin-top:34px}
+  .ai-note{font-size:12.5px;color:var(--ink-faint);font-style:italic;margin:18px 0 8px;line-height:1.5}
+  .ai-foot{font-size:12px;color:var(--ink-faint);margin-top:26px;line-height:1.5;max-width:340px;margin-left:auto;margin-right:auto}
   .logout-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--ink-faint);padding:8px;border-radius:8px;cursor:pointer;transition:.15s;margin-left:2px}
   .logout-btn:hover{background:var(--warm);color:var(--ink)}
   .endplate .mark{font-family:'Fraunces',serif;font-size:18px;color:var(--ink-soft);margin-bottom:5px}
@@ -212,6 +214,7 @@
           <button id="notif-btn" class="notif-btn">M'avertir chaque matin</button>
           <p id="notif-status" class="notif-status"></p>
         </div>
+        <p class="ai-foot">Contenus synthétisés par une intelligence artificielle. Chaque brève renvoie à ses sources d'origine.</p>
       </div>
     </section>
 
@@ -225,21 +228,21 @@
     <section id="page-saved" class="page">
       <div class="strip">
         <div>
-          <h1 class="serif">Mes brèves</h1>
-          <div class="strip-meta">Les brèves que vous avez conservées</div>
+          <h1 class="serif">Brèves enregistrées</h1>
+          <div class="strip-meta">Les brèves que vous avez enregistrées</div>
         </div>
       </div>
       <div class="list" id="saved-list"></div>
       <div class="empty" id="saved-empty">
-        <div class="serif">Aucune brève conservée</div>
-        <div class="sub">Dans une brève, touchez « Conserver » pour la retrouver ici.</div>
+        <div class="serif">Aucune brève enregistrée</div>
+        <div class="sub">Dans une brève, touchez « Enregistrer » pour la retrouver ici.</div>
       </div>
     </section>
   </div>
 </main>
 
 <script>
-const THEMES=["Politique","Économie","International","Technologie","Sciences","Culture","Sport","Climat","Santé"];
+const THEMES=["Politique","Économie","International","Technologie","Sciences","Culture","Sport","Climat","Santé","Insolite"];
 const CUSTOM=[];
 const selected=new Set(["Politique","International","Technologie","Économie","Culture","Sciences","Sport","Climat","Santé"]);
 let chosenCount=10;
@@ -249,7 +252,7 @@ let searchQuery="";
 const CATCOLOR={
   International:"#7C2B2B", Technologie:"#3C4A33", "Économie":"#B5762A",
   Politique:"#5E1E1E", Sciences:"#4A5A6B", Culture:"#8A3A5E",
-  Sport:"#2E5E55", "Santé":"#9C4A2E", Climat:"#4A6B3C"
+  Sport:"#2E5E55", "Santé":"#9C4A2E", Climat:"#4A6B3C", Insolite:"#7A5A8E"
 };
 function cat(t){return CATCOLOR[t]||"#5A4B3C"}
 
@@ -513,10 +516,11 @@ function openDetail(id){
     '<span class="a-cat" style="color:'+c+'">'+a.theme+'</span>'+
     '<h1 class="a-title">'+a.title+'</h1>'+
     '<div class="a-meta"><span class="m-left">'+a.angles.length+' sources croisées</span>'+
-      '<button class="save-btn'+(isSaved?' on':'')+'" data-save="'+id+'">'+svg(isSaved?ICONS.bookmarkOn:ICONS.bookmark)+(isSaved?'Conservée':'Conserver')+'</button>'+
+      '<button class="save-btn'+(isSaved?' on':'')+'" data-save="'+id+'">'+svg(isSaved?ICONS.bookmarkOn:ICONS.bookmark)+(isSaved?'Enregistrée':'Enregistrer')+'</button>'+
     '</div>'+
     '<p class="a-lead">'+a.summary+'</p>'+
     '<div class="a-body">'+a.full+'</div>'+
+    '<p class="ai-note">Contenu synthétisé par une intelligence artificielle à partir des sources ci-dessous.</p>'+
     '<div class="sources-h disp">Sources</div>'+
     '<div class="sources-rule"></div>'+
     a.angles.map(g=>
