@@ -44,8 +44,8 @@ function buildOverlay() {
 
     <div class="auth-screen" id="auth-denied" style="display:none">
       <div class="auth-logo">B</div>
-      <h2 class="auth-hi">Accès sur invitation</h2>
-      <p class="auth-sub">Brève est en accès limité pour le moment. Votre adresse ne figure pas encore parmi les comptes autorisés. Demandez votre invitation : nous vous préviendrons dès que votre accès sera ouvert.</p>
+      <h2 class="auth-hi">Bientôt parmi nous</h2>
+      <p class="auth-sub">Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Laissez-nous votre adresse : nous vous écrirons dès que votre accès sera prêt.</p>
       <button class="auth-cta" id="auth-denied-beta">Obtenir une invitation</button>
       <button class="auth-skip" id="auth-denied-back">Revenir à la connexion</button>
     </div>
