@@ -307,7 +307,6 @@
 const THEMES=["France","Monde","Économie","Tech & Sciences","Culture","Sport","Santé","Environnement","Société","Insolite"];
 const CUSTOM=[];
 const selected=new Set(["France","Monde","Économie","Tech & Sciences","Culture","Sport","Santé","Environnement","Société"]);
-let chosenCount=10;
 let searchQuery="";
 
 /* couleurs d'accent par thème (sobres, encrées) */
@@ -517,10 +516,12 @@ function searchMatches(a){
 function pickArticles(){
   // Une recherche active prend le dessus : on cherche dans TOUTES les brèves,
   // indépendamment des thèmes sélectionnés. Sinon, filtrage par thèmes.
+  // On affiche TOUTES les brèves correspondantes (plus de plafond) : le backend
+  // borne déjà le volume (quelques brèves par thème), donc la liste reste courte.
   if(searchQuery){
-    return ARTICLES.filter(searchMatches).sort((a,b)=>a.priority-b.priority).slice(0,chosenCount);
+    return ARTICLES.filter(searchMatches).sort((a,b)=>a.priority-b.priority);
   }
-  return ARTICLES.filter(articleMatches).sort((a,b)=>a.priority-b.priority).slice(0,chosenCount);
+  return ARTICLES.filter(articleMatches).sort((a,b)=>a.priority-b.priority);
 }
 /* ---------- revue list ---------- */
 function entryRow(a,i){
