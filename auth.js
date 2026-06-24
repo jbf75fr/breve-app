@@ -67,7 +67,15 @@ function buildOverlay() {
       <p class="auth-sub">Choisissez vos thématiques. Vous pourrez les modifier à tout moment.</p>
       <div class="auth-themes" id="auth-themes"></div>
       <div class="auth-count" id="auth-count"></div>
-      <button class="auth-cta" id="auth-ob-done">Voir ma revue</button>
+      <button class="auth-cta" id="auth-ob-done">Continuer</button>
+    </div>
+
+    <div class="auth-screen" id="auth-notif" style="display:none">
+      <div class="auth-logo">B</div>
+      <h2 class="auth-hi">Un rendez-vous chaque matin</h2>
+      <p class="auth-sub" id="auth-notif-sub">Recevez une notification quand votre revue du jour est prête. Rien d'autre, jamais de spam.</p>
+      <button class="auth-cta" id="auth-notif-enable">Activer les notifications</button>
+      <button class="auth-skip" id="auth-notif-later">Plus tard</button>
     </div>
 
     <div class="auth-beta-panel" id="auth-beta-panel" style="display:none">
@@ -83,6 +91,23 @@ function buildOverlay() {
 
   document.getElementById("auth-google").addEventListener("click", signIn);
   document.getElementById("auth-ob-done").addEventListener("click", finishOnboarding);
+
+  // Écran notifications de l'onboarding.
+  const notifEnable = document.getElementById("auth-notif-enable");
+  const notifLater = document.getElementById("auth-notif-later");
+  if (notifEnable) notifEnable.addEventListener("click", async () => {
+    try {
+      // Attendre qu'OneSignal soit prêt, puis demander la permission + abonner.
+      if (window.OneSignalReady && window.OneSignal) {
+        await window.OneSignal.Notifications.requestPermission();
+        await window.OneSignal.User.PushSubscription.optIn();
+      }
+    } catch (e) {
+      console.warn("Activation notifications (onboarding) impossible", e);
+    }
+    enterApp();
+  });
+  if (notifLater) notifLater.addEventListener("click", enterApp);
 
   document.getElementById("auth-beta-close").addEventListener("click", () => {
     document.getElementById("auth-beta-panel").style.display = "none";
@@ -162,9 +187,37 @@ function showOverlay(which) {
   document.getElementById("auth-denied").style.display = which === "denied" ? "flex" : "none";
   document.getElementById("auth-welcome").style.display = which === "welcome" ? "flex" : "none";
   document.getElementById("auth-onboard").style.display = which === "onboard" ? "flex" : "none";
+  const notifScreen = document.getElementById("auth-notif");
+  if (notifScreen) notifScreen.style.display = which === "notif" ? "flex" : "none";
   if (which === "login") typeTagline();
   if (which === "welcome") { welcomeIndex = 0; renderWelcome(); }
   if (which === "onboard") renderOnboardThemes();
+  if (which === "notif") prepareNotifScreen();
+}
+
+// Adapte l'écran de proposition des notifications selon l'appareil.
+function prepareNotifScreen() {
+  const sub = document.getElementById("auth-notif-sub");
+  const enableBtn = document.getElementById("auth-notif-enable");
+  const ua = navigator.userAgent || "";
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const standalone = (("standalone" in navigator) && navigator.standalone) ||
+                     (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  const supported = ("Notification" in window) && ("serviceWorker" in navigator) && ("PushManager" in window);
+
+  // Cas iPhone pas encore installé sur l'écran d'accueil : les notifications
+  // sont impossibles tant que l'app n'est pas installée. On explique au lieu
+  // de proposer un bouton qui échouerait.
+  if ((isIOS && !standalone) || !supported) {
+    if (sub) {
+      sub.textContent = isIOS
+        ? "Pour recevoir votre revue chaque matin, ajoutez d'abord Brève à votre écran d'accueil (icône Partager, puis « Sur l'écran d'accueil »). Vous pourrez activer les notifications ensuite, depuis les réglages."
+        : "Les notifications ne sont pas disponibles sur cet appareil. Vous pourrez les activer plus tard depuis les réglages si cela change.";
+    }
+    if (enableBtn) enableBtn.style.display = "none";
+  } else {
+    if (enableBtn) enableBtn.style.display = "";
+  }
 }
 
 // Effet « machine à écrire » de la tagline : la phrase s'écrit lettre par lettre,
@@ -371,6 +424,12 @@ async function startSession(user, isFreshLogin) {
 async function finishOnboarding() {
   if (window.selected.size === 0) return;
   await savePreferences();          // crée la ligne de préférences
+  // On passe à l'écran de proposition des notifications avant d'entrer.
+  showOverlay("notif");
+}
+
+// Termine vraiment l'onboarding et entre dans l'app.
+function enterApp() {
   window.breveRefresh();
   hideOverlay();
 }
