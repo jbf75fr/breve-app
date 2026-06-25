@@ -76,6 +76,9 @@
   .e-cats .e-cat:not(:last-child)::after{content:"·";position:absolute;right:-7px;color:var(--ink-faint)}
   .e-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
   .e-brief{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  /* Aperçu du texte sur la carte : coupé proprement après 3 lignes. */
+  .e-preview{font-size:14px;color:var(--ink-soft);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .e-srccount{font-size:12px;color:var(--ink-faint);margin-top:8px;font-weight:500;letter-spacing:.01em}
   .e-savedat{font-size:12px;color:var(--ink-faint);margin-top:8px;font-style:italic}
   /* ----- Skeleton de chargement ----- */
   .sk{position:relative;overflow:hidden;background:#ECEAE4;border-radius:6px}
@@ -527,7 +530,7 @@ function toggleSaveByKey(key, contentForAdd){
     saved.delete(key);
   }else if(contentForAdd){
     const a=contentForAdd;
-    saved.set(key,{themes:themesOf(a),title:a.title,brief:a.brief,summary:a.summary,
+    saved.set(key,{themes:themesOf(a),title:a.title,
                    full:a.full,angles:a.angles,savedAt:new Date().toISOString()});
   }
   persistSaved();updateBadge();renderSaved();renderBrief();
@@ -542,7 +545,7 @@ function toggleSave(id){
     saved.delete(k);
   }else{
     // On copie le contenu et on horodate l'enregistrement.
-    const copy={themes:themesOf(a),title:a.title,brief:a.brief,summary:a.summary,
+    const copy={themes:themesOf(a),title:a.title,
                 full:a.full,angles:a.angles,savedAt:new Date().toISOString()};
     saved.set(k,copy);
   }
@@ -730,13 +733,13 @@ function runSearch(){
 function articleMatches(a){
   // La brève apparaît si AU MOINS un de ses tags est sélectionné.
   for(const t of themesOf(a)){if(selected.has(t))return true;}
-  const hay=(a.title+' '+a.summary+' '+a.full+' '+themesOf(a).join(' ')).toLowerCase();
+  const hay=(a.title+' '+(a.full||'')+' '+themesOf(a).join(' ')).toLowerCase();
   for(const t of CUSTOM){if(selected.has(t)&&hay.includes(t.toLowerCase()))return true}
   return false;
 }
 function searchMatches(a){
   const q=searchQuery.toLowerCase();
-  const hay=(a.title+' '+a.brief+' '+a.summary+' '+a.full+' '+themesOf(a).join(' ')+' '+
+  const hay=(a.title+' '+(a.full||'')+' '+themesOf(a).join(' ')+' '+
     a.angles.map(g=>g.outlet+' '+g.take).join(' ')).toLowerCase();
   return hay.includes(q);
 }
@@ -752,12 +755,14 @@ function pickArticles(){
 }
 /* ---------- revue list ---------- */
 function entryRow(a,i){
+  const nSrc=(a.angles&&a.angles.length)||0;
   return '<div class="entry" data-open="'+a.id+'">'+
     '<div class="e-num">'+pad(i+1)+'</div>'+
     '<div class="e-body">'+
       '<span class="e-cats">'+themeTags(a)+'</span>'+
       '<div class="e-title">'+a.title+'</div>'+
-      '<div class="e-brief">'+a.brief+'</div>'+
+      '<div class="e-preview">'+(a.full||'')+'</div>'+
+      (nSrc?'<div class="e-srccount">'+nSrc+(nSrc>1?' sources':' source')+'</div>':'')+
     '</div>'+
   '</div>';
 }
@@ -857,7 +862,6 @@ function renderDetail(a){
     '<div class="a-meta"><span class="m-left">'+angles.length+' sources croisées</span>'+
       '<button class="save-btn'+(saved_?' on':'')+'" data-savekey="'+encodeURIComponent(k)+'">'+svg(saved_?ICONS.bookmarkOn:ICONS.bookmark)+(saved_?'Enregistrée':'Enregistrer')+'</button>'+
     '</div>'+
-    '<p class="a-lead">'+a.summary+'</p>'+
     '<div class="a-body">'+a.full+'</div>'+
     '<p class="ai-note">Contenu synthétisé par une intelligence artificielle à partir des sources ci-dessous.</p>'+
     '<div class="sources-h disp">Sources</div>'+
@@ -888,12 +892,14 @@ function renderSaved(){
   empty.style.display='none';
   wrap.innerHTML=list.map((a,i)=>{
     const k=breveKey(a);
+    const nSrc=(a.angles&&a.angles.length)||0;
     return '<div class="entry" data-opensaved="'+encodeURIComponent(k)+'">'+
       '<div class="e-num">'+pad(i+1)+'</div>'+
       '<div class="e-body">'+
         '<span class="e-cats">'+themeTags(a)+'</span>'+
         '<div class="e-title">'+a.title+'</div>'+
-        '<div class="e-brief">'+a.brief+'</div>'+
+        '<div class="e-preview">'+(a.full||'')+'</div>'+
+        (nSrc?'<div class="e-srccount">'+nSrc+(nSrc>1?' sources':' source')+'</div>':'')+
         '<div class="e-savedat">'+fmtSavedDate(a.savedAt)+'</div>'+
       '</div>'+
       '<div class="e-aside"><button class="modal-close" data-unsavekey="'+encodeURIComponent(k)+'" title="Retirer" style="color:var(--ink-faint)">'+svg(ICONS.trash)+'</button></div>'+
