@@ -44,10 +44,10 @@ function buildOverlay() {
 
     <div class="auth-screen" id="auth-denied" style="display:none">
       <div class="auth-logo">B</div>
-      <h2 class="auth-hi" id="auth-denied-title">Votre accès se prépare</h2>
-      <p class="auth-sub" id="auth-denied-sub">Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Obtenez votre invitation : nous vous écrirons dès que votre accès sera prêt.</p>
-      <button class="auth-cta" id="auth-denied-beta">Obtenir une invitation</button>
-      <button class="auth-skip" id="auth-denied-back">Revenir à la connexion</button>
+      <h2 class="auth-hi" id="auth-denied-title">Obtenez votre accès</h2>
+      <p class="auth-sub" id="auth-denied-sub">Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Laissez-nous votre adresse : nous vous écrirons dès que votre accès sera prêt.</p>
+      <button class="auth-cta" id="auth-denied-beta">Obtenez votre accès</button>
+      <button class="auth-skip" id="auth-denied-back">Votre accès est déjà validé ? Connectez-vous</button>
     </div>
 
     <div class="auth-screen" id="auth-welcome" style="display:none">
@@ -236,14 +236,17 @@ function prepareDeniedScreen() {
   const title = document.getElementById("auth-denied-title");
   const sub = document.getElementById("auth-denied-sub");
   const betaBtn = document.getElementById("auth-denied-beta");
+  const backBtn = document.getElementById("auth-denied-back");
   if (invitationRequested()) {
     if (title) title.textContent = "Votre demande est bien arrivée";
     if (sub) sub.textContent = "Merci de votre intérêt pour Brève. Nous ouvrons les accès petit à petit : vous recevrez un message dès que le vôtre sera prêt. Il n'y a rien d'autre à faire.";
     if (betaBtn) betaBtn.style.display = "none";
+    if (backBtn) { backBtn.style.display = ""; backBtn.textContent = "Revenir à l'accueil"; }
   } else {
-    if (title) title.textContent = "Votre accès se prépare";
-    if (sub) sub.textContent = "Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Obtenez votre invitation : nous vous écrirons dès que votre accès sera prêt.";
+    if (title) title.textContent = "Obtenez votre accès";
+    if (sub) sub.textContent = "Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Laissez-nous votre adresse : nous vous écrirons dès que votre accès sera prêt.";
     if (betaBtn) betaBtn.style.display = "";
+    if (backBtn) { backBtn.style.display = ""; backBtn.textContent = "Votre accès est déjà validé ? Connectez-vous"; }
   }
 }
 
