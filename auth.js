@@ -44,8 +44,8 @@ function buildOverlay() {
 
     <div class="auth-screen" id="auth-denied" style="display:none">
       <div class="auth-logo">B</div>
-      <h2 class="auth-hi">Votre accès se prépare</h2>
-      <p class="auth-sub">Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Obtenez votre invitation : nous vous écrirons dès que votre accès sera prêt.</p>
+      <h2 class="auth-hi" id="auth-denied-title">Votre accès se prépare</h2>
+      <p class="auth-sub" id="auth-denied-sub">Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Obtenez votre invitation : nous vous écrirons dès que votre accès sera prêt.</p>
       <button class="auth-cta" id="auth-denied-beta">Obtenir une invitation</button>
       <button class="auth-skip" id="auth-denied-back">Revenir à la connexion</button>
     </div>
@@ -124,6 +124,16 @@ function buildOverlay() {
     showOverlay("login");
   });
 
+  // Tally émet un message lorsque le formulaire est réellement soumis. On en
+  // profite pour mémoriser, dans ce navigateur, que la demande d'invitation a
+  // été faite : on cessera alors de reproposer le formulaire à cette personne.
+  window.addEventListener("message", (e) => {
+    const d = e && e.data;
+    if (d && (d.type === "Tally.FormSubmitted" || d.event === "Tally.FormSubmitted")) {
+      markInvitationRequested();
+    }
+  });
+
   loadTally();
 }
 
@@ -169,6 +179,29 @@ function endWelcome() {
   showOverlay("onboard");
 }
 
+// --- Mémoire locale de la demande d'invitation ----------------------------- //
+// On retient, dans ce navigateur, qu'une demande d'invitation a déjà été
+// soumise. Cela permet d'afficher un écran d'attente apaisé au lieu de
+// reproposer le formulaire en boucle. Ce repère est propre à l'appareil :
+// changer d'appareil ou effacer les données du navigateur le réinitialise.
+const INVITATION_FLAG = "breve_invitation_demandee";
+
+function invitationRequested() {
+  try {
+    return window.localStorage.getItem(INVITATION_FLAG) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+function markInvitationRequested() {
+  try {
+    window.localStorage.setItem(INVITATION_FLAG, "1");
+  } catch (e) {
+    // Stockage indisponible (navigation privée stricte) : on ignore sans casser.
+  }
+}
+
 function loadTally() {
   const initialize = () => { if (window.Tally) window.Tally.loadEmbeds(); };
   if (window.Tally) { initialize(); return; }
@@ -190,9 +223,28 @@ function showOverlay(which) {
   const notifScreen = document.getElementById("auth-notif");
   if (notifScreen) notifScreen.style.display = which === "notif" ? "flex" : "none";
   if (which === "login") typeTagline();
+  if (which === "denied") prepareDeniedScreen();
   if (which === "welcome") { welcomeIndex = 0; renderWelcome(); }
   if (which === "onboard") renderOnboardThemes();
   if (which === "notif") prepareNotifScreen();
+}
+
+// Adapte l'écran « accès » selon que la demande d'invitation a déjà été faite.
+// Première venue : invitation à demander, avec le bouton vers le formulaire.
+// Demande déjà soumise : message d'attente apaisé, sans formulaire.
+function prepareDeniedScreen() {
+  const title = document.getElementById("auth-denied-title");
+  const sub = document.getElementById("auth-denied-sub");
+  const betaBtn = document.getElementById("auth-denied-beta");
+  if (invitationRequested()) {
+    if (title) title.textContent = "Votre demande est bien arrivée";
+    if (sub) sub.textContent = "Merci de votre intérêt pour Brève. Nous ouvrons les accès petit à petit : vous recevrez un message dès que le vôtre sera prêt. Il n'y a rien d'autre à faire.";
+    if (betaBtn) betaBtn.style.display = "none";
+  } else {
+    if (title) title.textContent = "Votre accès se prépare";
+    if (sub) sub.textContent = "Brève ouvre ses portes petit à petit, à un cercle de premiers lecteurs. Obtenez votre invitation : nous vous écrirons dès que votre accès sera prêt.";
+    if (betaBtn) betaBtn.style.display = "";
+  }
 }
 
 // Adapte l'écran de proposition des notifications selon l'appareil.
