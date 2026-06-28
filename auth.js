@@ -441,15 +441,9 @@ async function isAllowed(email) {
 
 // --------------------------------------------------------------------------- //
 async function startSession(user, isFreshLogin) {
-  // Contrôle d'accès : seuls les emails approuvés (allowlist) peuvent entrer.
-  const allowed = await isAllowed(user.email);
-  if (!allowed) {
-    showOverlay("denied");
-    await supabase.auth.signOut();   // on ferme la session non autorisée
-    currentUser = null;
-    return;
-  }
-
+  // Accès ouvert : toute personne connectée via Google peut entrer.
+  // (La liste blanche n'est plus utilisée. La fonction isAllowed reste
+  // présente plus bas, inutilisée, si l'on souhaite un jour la réactiver.)
   currentUser = user;
 
   // Expose l'email à l'app pour l'afficher (zone compte).
