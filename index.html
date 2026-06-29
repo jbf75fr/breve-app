@@ -41,7 +41,7 @@
   header.top{padding:0;border-bottom:1px solid var(--glass-line);position:sticky;top:0;background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));z-index:20}
   .top-in{display:flex;align-items:center;justify-content:space-between;max-width:1180px;width:100%;margin:0 auto;padding:22px 32px}
   .brand{display:flex;align-items:center;gap:11px}
-  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:600;font-size:20px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:600;font-size:20px;line-height:1;padding-bottom:1px}
   .brand .logo .a{color:#fff}
   .brand .name{font-family:'Newsreader',serif;font-size:21px;font-weight:600;letter-spacing:.01em}
   .brand .date{font-size:13px;color:var(--accent);font-weight:600}
@@ -49,6 +49,7 @@
   .nav button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:8px 15px;border-radius:8px;cursor:pointer;transition:.15s}
   .nav button:hover{background:var(--warm);color:var(--ink)}
   .nav button.active{background:var(--accent);color:#fff}
+  .nav-short{display:none}
   .badge{display:none;margin-left:4px;background:var(--accent);color:#fff;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px}
   .nav button.active .badge{background:#fff;color:var(--accent)}
 
@@ -79,11 +80,18 @@
   @media(max-width:760px){.list{grid-template-columns:1fr}}
   /* Header sur mobile : marque sur une ligne, onglets (et déconnexion) en dessous */
   @media(max-width:640px){
-    .top-in{flex-wrap:wrap;gap:12px;padding:14px 18px}
+    .top-in{flex-wrap:wrap;gap:12px;padding:14px 18px;align-items:center;position:relative}
     .brand{flex:1 1 auto}
-    .nav{flex:1 1 100%;width:100%;justify-content:flex-start;gap:8px;align-items:center}
-    .nav #settings-btn{margin-left:auto}
-    .nav button{padding:8px 14px;white-space:nowrap}
+    .nav-long{display:none}
+    .nav-short{display:inline}
+    /* Bascule façon iOS : gouttière grise, deux onglets à largeur égale. */
+    .nav{order:3;flex:1 1 100%;width:100%;gap:3px;background:var(--warm);border-radius:11px;padding:3px}
+    .nav #nav-brief,.nav #nav-saved{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;border-radius:8px;font-size:13px;white-space:nowrap}
+    .nav button:hover{background:none}
+    .nav #nav-brief.active,.nav #nav-saved.active{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(60,75,72,.12)}
+    .nav button.active .badge{background:var(--accent);color:#fff}
+    /* La roue des réglages sort du segmented et se place en haut à droite. */
+    .nav #settings-btn{position:absolute;top:16px;right:18px;padding:6px}
   }
   .entry{background:var(--surface);border:1px solid rgba(255,255,255,.6);border-radius:var(--radius);padding:20px 22px;cursor:pointer;transition:.18s;display:flex;gap:14px;align-items:flex-start;box-shadow:0 4px 16px rgba(60,75,72,.1),0 1px 3px rgba(60,75,72,.06)}
   .entry:hover{box-shadow:0 8px 24px rgba(60,75,72,.16),0 2px 5px rgba(60,75,72,.08);transform:translateY(-2px)}
@@ -353,7 +361,7 @@
     </div>
     <nav class="nav">
       <button id="nav-brief" class="active" data-go="brief">Votre revue</button>
-      <button id="nav-saved" data-go="saved">Brèves enregistrées <span class="badge" id="saved-badge">0</span></button>
+      <button id="nav-saved" data-go="saved"><span class="nav-long">Brèves enregistrées</span><span class="nav-short">Enregistrées</span> <span class="badge" id="saved-badge">0</span></button>
       <button id="settings-btn" class="logout-btn" title="Réglages" aria-label="Réglages" style="display:none">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
