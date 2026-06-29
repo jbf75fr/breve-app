@@ -222,8 +222,9 @@
   #page-detail{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:901;background:var(--surface);border-radius:22px 22px 0 0;box-shadow:0 -8px 40px rgba(26,42,40,.2);transform:translateY(100%);transition:transform .34s cubic-bezier(.22,.61,.36,1);max-height:92vh;width:100%;max-width:760px;margin:0 auto;animation:none;overflow:hidden;display:flex;flex-direction:column;touch-action:none}
   #page-detail.show{transform:translateY(0)}
   #page-detail::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:#D0DAD7;margin:10px auto 2px;flex:0 0 auto;cursor:grab}
-  #page-detail .back{order:-1;margin:8px 22px 4px;padding:8px 0}
-  #page-detail .article{max-width:none;border:none;border-radius:0;box-shadow:none;background:transparent;padding:0 22px 34px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #page-detail .sheet-close{position:absolute;top:14px;right:16px;z-index:3;width:34px;height:34px;border-radius:50%;border:none;background:var(--warm);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+  #page-detail .sheet-close:hover{background:var(--line-strong);color:var(--ink)}
+  #page-detail .article{max-width:none;border:none;border-radius:0;box-shadow:none;background:transparent;padding:14px 22px 34px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   @media(prefers-reduced-motion:reduce){#page-detail,.scrim{transition:none}}
   .a-cat{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:inline-block;margin-bottom:10px}
   .a-cats{display:inline-flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:4px}
@@ -497,8 +498,8 @@
 
     <div class="scrim" id="detail-scrim"></div>
     <section id="page-detail" class="page">
-      <button class="back" data-go="brief">
-        <svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Retour à la revue
+      <button class="sheet-close" id="detail-close" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
       <article class="article" id="detail"></article>
     </section>
@@ -887,15 +888,16 @@ function renderBrief(){
 
 /* ---------- detail ---------- */
 // Ouvre le détail d'une brève du jour (par son id).
+var detailReturn={page:'brief',scroll:0};
 function openDetail(id){
   const a=ARTICLES.find(x=>x.id===id);
-  if(a)renderDetail(a);
+  if(a){detailReturn={page:'brief',scroll:window.scrollY||window.pageYOffset||0};renderDetail(a);}
 }
 // Ouvre le détail d'une brève ENREGISTRÉE (depuis le contenu stocké), même si
 // l'actualité d'origine a disparu de la revue du jour.
 function openSaved(key){
   const a=saved.get(key);
-  if(a)renderDetail(a);
+  if(a){detailReturn={page:'saved',scroll:window.scrollY||window.pageYOffset||0};renderDetail(a);}
 }
 function renderDetail(a){
   const saved_=isSaved(a);
@@ -958,12 +960,9 @@ function show(p){
   var scrim=document.getElementById('detail-scrim');
   var detail=document.getElementById('page-detail');
   if(p==='detail'){
-    // La feuille détail remonte par-dessus la revue, qui reste visible derrière.
-    document.getElementById('page-brief').classList.add('show');
+    // La feuille détail remonte par-dessus la page d'origine, qui reste visible derrière.
     if(scrim)scrim.classList.add('open');
     detail.classList.add('show');
-    document.getElementById('nav-brief').classList.add('active');
-    document.getElementById('nav-saved').classList.remove('active');
     return;
   }
   // Toute autre page : on referme la feuille détail si elle est ouverte.
@@ -975,6 +974,23 @@ function show(p){
   document.getElementById('nav-saved').classList.toggle('active',p==='saved');
   if(p==='saved')renderSaved();
   window.scrollTo({top:0,behavior:'smooth'});
+}
+// Ferme la feuille détail : revient à la page d'origine (revue ou enregistrées)
+// et restaure la position de défilement d'avant l'ouverture.
+function closeDetail(){
+  var scrim=document.getElementById('detail-scrim');
+  var detail=document.getElementById('page-detail');
+  detail.classList.remove('show');
+  if(scrim)scrim.classList.remove('open');
+  var back=(detailReturn&&detailReturn.page)||'brief';
+  // On s'assure que la bonne page est affichée derrière (sans la recharger ni remonter en haut).
+  document.querySelectorAll('.page').forEach(x=>{if(x.id!=='page-detail')x.classList.remove('show')});
+  document.getElementById('page-'+back).classList.add('show');
+  document.getElementById('nav-brief').classList.toggle('active',back==='brief');
+  document.getElementById('nav-saved').classList.toggle('active',back==='saved');
+  if(back==='saved')renderSaved();
+  // Restaure la hauteur de page où on était avant d'ouvrir la brève.
+  window.scrollTo({top:(detailReturn&&detailReturn.scroll)||0,behavior:'auto'});
 }
 
 document.addEventListener('click',function(e){
@@ -1245,7 +1261,9 @@ function setNotifState(on){
   var scrim=document.getElementById('detail-scrim');
   var sheet=document.getElementById('page-detail');
   if(!scrim||!sheet)return;
-  function closeSheet(){show('brief');}
+  function closeSheet(){closeDetail();}
+  var closeBtn=document.getElementById('detail-close');
+  if(closeBtn)closeBtn.addEventListener('click',closeSheet);
   scrim.addEventListener('click',closeSheet);
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&sheet.classList.contains('show'))closeSheet();});
   // Glissement de la poignée (zone haute de la feuille) vers le bas pour refermer.
