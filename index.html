@@ -45,13 +45,17 @@
   .brand .logo .a{color:#fff}
   .brand .name{font-family:'Newsreader',serif;font-size:21px;font-weight:600;letter-spacing:.01em}
   .brand .date{font-size:13px;color:var(--accent);font-weight:600}
-  .nav{display:flex;gap:4px}
-  .nav button{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:8px 15px;border-radius:8px;cursor:pointer;transition:.15s}
-  .nav button:hover{background:var(--warm);color:var(--ink)}
-  .nav button.active{background:var(--accent);color:#fff}
+  .nav{display:inline-flex;align-items:center;gap:6px}
+  .nav-seg{display:inline-flex;gap:3px;background:var(--warm);border-radius:11px;padding:3px}
+  .nav #nav-brief,.nav #nav-saved{font-family:inherit;font-size:14px;color:var(--ink-soft);background:none;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+  .nav button:hover{color:var(--ink)}
+  .nav #nav-brief.active,.nav #nav-saved.active{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(60,75,72,.12)}
   .nav-short{display:none}
-  .badge{display:none;margin-left:4px;background:var(--accent);color:#fff;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px}
-  .nav button.active .badge{background:#fff;color:var(--accent)}
+  .badge{display:none;margin-left:2px;background:var(--accent);color:#fff;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px}
+  .nav button.active .badge{background:var(--accent);color:#fff}
+  /* La roue des réglages reste hors du segmented, à côté. */
+  .nav #settings-btn{background:none;border-radius:8px}
+  .nav #settings-btn:hover{background:var(--warm)}
 
   main{padding:40px 0 80px}
   .page{display:none;animation:fade .3s ease}
@@ -84,12 +88,10 @@
     .brand{flex:1 1 auto}
     .nav-long{display:none}
     .nav-short{display:inline}
-    /* Bascule façon iOS : gouttière grise, deux onglets à largeur égale. */
-    .nav{order:3;flex:1 1 100%;width:100%;gap:3px;background:var(--warm);border-radius:11px;padding:3px}
-    .nav #nav-brief,.nav #nav-saved{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;border-radius:8px;font-size:13px;white-space:nowrap}
-    .nav button:hover{background:none}
-    .nav #nav-brief.active,.nav #nav-saved.active{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(60,75,72,.12)}
-    .nav button.active .badge{background:var(--accent);color:#fff}
+    /* Le segmented prend toute la largeur sur mobile. */
+    .nav{order:3;flex:1 1 100%;width:100%}
+    .nav-seg{flex:1 1 100%;width:100%}
+    .nav #nav-brief,.nav #nav-saved{flex:1 1 0;padding:9px 8px;font-size:13px}
     /* La roue des réglages sort du segmented et se place en haut à droite. */
     .nav #settings-btn{position:absolute;top:16px;right:18px;padding:6px}
   }
@@ -361,8 +363,10 @@
       <div><div class="name">Brève</div></div>
     </div>
     <nav class="nav">
-      <button id="nav-brief" class="active" data-go="brief">Votre revue</button>
-      <button id="nav-saved" data-go="saved"><span class="nav-long">Brèves enregistrées</span><span class="nav-short">Enregistrées</span> <span class="badge" id="saved-badge">0</span></button>
+      <div class="nav-seg">
+        <button id="nav-brief" class="active" data-go="brief">Votre revue</button>
+        <button id="nav-saved" data-go="saved"><span class="nav-long">Brèves enregistrées</span><span class="nav-short">Enregistrées</span> <span class="badge" id="saved-badge">0</span></button>
+      </div>
       <button id="settings-btn" class="logout-btn" title="Réglages" aria-label="Réglages" style="display:none">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
