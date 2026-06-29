@@ -41,7 +41,8 @@
   header.top{padding:0;border-bottom:1px solid var(--glass-line);position:sticky;top:0;background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));z-index:20}
   .top-in{display:flex;align-items:center;justify-content:space-between;max-width:1180px;width:100%;margin:0 auto;padding:22px 32px}
   .brand{display:flex;align-items:center;gap:11px}
-  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:600;font-size:20px;line-height:1;padding-bottom:1px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:600;font-size:20px;line-height:1}
+  .brand .logo b{font-weight:600;display:block;transform:translateY(1px)}
   .brand .logo .a{color:#fff}
   .brand .name{font-family:'Newsreader',serif;font-size:21px;font-weight:600;letter-spacing:.01em}
   .brand .date{font-size:13px;color:var(--accent);font-weight:600}
@@ -372,7 +373,7 @@
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <span class="logo">B</span>
+      <span class="logo"><b>B</b></span>
       <div><div class="name">Brève</div></div>
     </div>
     <nav class="nav">
