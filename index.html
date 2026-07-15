@@ -306,12 +306,15 @@
   @keyframes twBlink{0%,100%{opacity:1}50%{opacity:0}}
   @keyframes twFade{to{opacity:0}}
   #auth-login .auth-gbtn{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.68s}
-  #auth-login .auth-status{animation:rise .7s ease both;animation-delay:.8s}
+  #auth-login .auth-abtn{animation:rise .7s cubic-bezier(.22,.61,.36,1) both;animation-delay:.78s}
+  #auth-login .auth-status{animation:rise .7s ease both;animation-delay:.9s}
   .auth-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Newsreader',serif;font-weight:600;font-size:38px;margin-bottom:24px}
   .auth-title{font-family:'Newsreader',serif;font-size:40px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}
   .auth-tagline{font-size:16px;color:var(--ink-soft);line-height:1.5;margin-bottom:40px}
   .auth-gbtn{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:320px;background:var(--glass-strong);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-line);border-radius:30px;padding:14px 20px;font-family:inherit;font-size:15px;font-weight:500;color:#2A3A37;cursor:pointer;transition:.15s;box-shadow:0 4px 14px rgba(60,75,72,.1)}
   .auth-gbtn:hover{box-shadow:0 6px 20px rgba(60,75,72,.16);border-color:var(--accent)}
+  .auth-abtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:320px;background:#000;border:1px solid #000;border-radius:30px;padding:14px 20px;margin-top:12px;font-family:inherit;font-size:15px;font-weight:500;color:#fff;cursor:pointer;transition:.15s;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+  .auth-abtn:hover{background:#1a1a1a;border-color:#1a1a1a;box-shadow:0 6px 20px rgba(0,0,0,.2)}
   .auth-status{font-size:13px;color:var(--ink-faint);margin-top:18px;min-height:18px}
   .auth-sep{display:flex;align-items:center;gap:14px;width:100%;max-width:320px;margin:26px 0 20px;color:var(--ink-faint);font-size:13px}
   .auth-sep::before,.auth-sep::after{content:"";flex:1;height:1px;background:var(--line)}
