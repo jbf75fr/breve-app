@@ -386,8 +386,6 @@ async function signInApple() {
 }
 
 async function signOut() {
-
-async function signOut() {
   await supabase.auth.signOut();
   window.location.reload();
 }
