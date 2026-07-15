@@ -9,7 +9,7 @@
   index.html) pour pouvoir contrôler toute l'application.
 */
 
-const CACHE = "breve-v2";
+const CACHE = "breve-v3";
 const ASSETS = [
   "./",
   "./index.html",
